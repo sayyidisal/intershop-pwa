@@ -6,6 +6,7 @@ export class FilterNavigationModule {
       .parent();
     return {
       filterClick: (value: string) => filterGroup.find(`[data-testing-id=filter-link-${value}]`).click(),
+      getFilter: (value: string) => filterGroup.find(`[data-testing-id=filter-link-${value}]`),
     };
   }
 }
