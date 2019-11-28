@@ -52,7 +52,7 @@ export class SearchParameterMapper {
     let data = '';
 
     if (searchParameter.queryTerm) {
-      data += '&@QueryTerm=' + searchParameter.queryTerm;
+      data += '&searchTerm=' + searchParameter.queryTerm;
     }
     if (searchParameter.data) {
       data += searchParameter.data;
@@ -67,6 +67,6 @@ export class SearchParameterMapper {
         }
       });
     }
-    return b64u.toBase64(b64u.encode(data));
+    return data;
   }
 }
