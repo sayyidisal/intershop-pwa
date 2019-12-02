@@ -77,7 +77,11 @@ describe('Filter Selectors', () => {
 
   describe('with ApplyFilter state', () => {
     beforeEach(() => {
-      store$.dispatch(new ApplyFilter({ searchParameter: 'b' }));
+      store$.dispatch(
+        new ApplyFilter({
+          searchParameter: { param: ['b'] },
+        })
+      );
     });
 
     it('should set the state to loaded', () => {
@@ -90,7 +94,7 @@ describe('Filter Selectors', () => {
       store$.dispatch(
         new ApplyFilterSuccess({
           availableFilter: {} as FilterNavigation,
-          searchParameter: 'b',
+          searchParameter: { param: ['b'] },
         })
       );
     });

@@ -76,7 +76,9 @@ describe('Filter Reducer', () => {
 
   describe('ApplyFilter', () => {
     it('should change state to loading when reduced', () => {
-      const action = new fromActions.ApplyFilter({ searchParameter: 'b' });
+      const action = new fromActions.ApplyFilter({
+        searchParameter: { param: ['b'] },
+      });
       const state = filterReducer(initialState, action);
 
       expect(state.loading).toBeTrue();
@@ -88,7 +90,8 @@ describe('Filter Reducer', () => {
       const filter = { filter: [{ name: 'a' }] } as FilterNavigation;
       const action = new fromActions.ApplyFilterSuccess({
         availableFilter: filter,
-        searchParameter: 'b',
+
+        searchParameter: { param: ['b'] },
       });
       const state = filterReducer(initialState, action);
 
