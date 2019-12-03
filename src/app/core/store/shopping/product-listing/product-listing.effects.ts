@@ -72,7 +72,10 @@ export class ProductListingEffects {
           sorting: params.get('sorting') || undefined,
           page: +params.get('page') || page || undefined,
           filters: params.get('filters')
-            ? { ...stringToFormParams(params.get('filters')), searchTerm: [id.value] }
+            ? {
+                ...stringToFormParams(params.get('filters')),
+                ...(id.type === 'search' ? { searchTerm: [id.value] } : {}),
+              }
             : undefined,
         }))
       )
@@ -133,8 +136,7 @@ export class ProductListingEffects {
         // TODO: work-around for client side computation of master variations
         ['search', 'category'].includes(type)
       ) {
-        const searchParameter = filters;
-        return new ApplyFilter({ searchParameter });
+        return new ApplyFilter({ searchParameter: filters });
       } else {
         switch (type) {
           case 'category':
