@@ -78,8 +78,8 @@ export class ActionCreatorsActionsMorpher {
     console.log(`updating references for ${actionClass.getName()}...`);
     let i = 0;
     actionClass.findReferencesAsNodes().forEach(reference => {
-      // exclude tests and the actions file itself
       if (
+        // exclude tests and the actions file itself
         !reference
           .getSourceFile()
           .getBaseName()
@@ -92,8 +92,8 @@ export class ActionCreatorsActionsMorpher {
         ) as NewExpression;
         if (newExpression) {
           // swap new class instantiation to actionCreator call
-          const hasArgument = newExpression.getArguments().length > 1;
-          const argument = hasArgument ? newExpression.getArguments()[1].getText() : '';
+          const hasArgument = newExpression.getArguments().length > 0;
+          const argument = hasArgument ? newExpression.getArguments()[0].getText() : '';
 
           // update general new statements in function calls
           if (newExpression.getParent().getKind() === SyntaxKind.CallExpression) {
