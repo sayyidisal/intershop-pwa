@@ -1,5 +1,7 @@
 import { CaseClause, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
+import { MorphOperators } from '../morph-operators/morph-operators';
+
 export class ActionCreatorsReducerMorpher {
   constructor(public storeName: string, public reducerFile: SourceFile) {}
 
@@ -14,13 +16,24 @@ export class ActionCreatorsReducerMorpher {
   private updateReducer() {
     console.log('replacing reducers...');
     // retrieve reducer logic from old reducer
-    const switchStatements: { identifier: string; hasLogic: boolean; block: string }[] = [];
+    const switchStatements: {
+      identifier: string;
+      hasLogic: boolean;
+      block: string;
+      previousIdentifiers: string[];
+    }[] = [];
+    let previousIdentifiers: string[] = [];
     this.reducerFile
       .getFunction(`${this.storeName}Reducer`)
       .getFirstDescendantByKind(SyntaxKind.CaseBlock)
       .getClauses()
       .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
       .forEach((clause: CaseClause) => {
+        // check whether clause is an empty clause
+        if (clause.getStatements().length == 0) {
+          previousIdentifiers.push(clause.getExpression().getText());
+          return;
+        }
         // is it a static return or is the payload used?
         const hasLogic =
           clause
@@ -28,12 +41,13 @@ export class ActionCreatorsReducerMorpher {
             .getStatements()[0]
             .getKind() !== SyntaxKind.ReturnStatement;
         // push information about switch statement to array
-        console.log(clause.getExpression().getText());
         switchStatements.push({
           identifier: clause.getExpression().getText(),
           hasLogic,
           block: clause.getFirstChildByKindOrThrow(SyntaxKind.Block).getText(),
+          previousIdentifiers: [...previousIdentifiers],
         });
+        previousIdentifiers = [];
       });
 
     // create new reducer function
@@ -41,8 +55,6 @@ export class ActionCreatorsReducerMorpher {
       isExported: false,
       isDefaultExport: false,
       hasDeclareKeyword: false,
-      docs: [],
-      kind: 39,
       declarationKind: VariableDeclarationKind.Const,
       declarations: [
         {
@@ -50,7 +62,6 @@ export class ActionCreatorsReducerMorpher {
           initializer: 'createReducer()',
           type: undefined,
           hasExclamationToken: false,
-          kind: 38,
         },
       ],
     });
@@ -58,18 +69,23 @@ export class ActionCreatorsReducerMorpher {
     // add first reducer argument
     createReducerFunction.addArgument('initialState');
     // for each switch case, add a new on()-function
-    switchStatements.forEach(statement => {
+    switchStatements.forEach(clause => {
       // name of the actionCreator function
-      let typeString: string;
-      statement.identifier.includes('.')
-        ? (typeString = statement.identifier.split('.')[1])
-        : (typeString = statement.identifier);
-      typeString = typeString.replace(/^\w/, c => c.toLowerCase());
-      const arrowFunction = statement.hasLogic
-        ? `(state, action) => ${statement.block}`
-        : `state => ${statement.block}`;
-      createReducerFunction.addArgument(`on(${this.storeName}Actions.${typeString}, ${arrowFunction})`);
+      const actionTypes = this.createActionTypes(clause.identifier, clause.previousIdentifiers);
+      const arrowFunction = clause.hasLogic ? `(state, action) => ${clause.block}` : `state => ${clause.block}`;
+      createReducerFunction.addArgument(`on(${actionTypes}, ${arrowFunction})`);
     });
+  }
+
+  private createActionTypes(identifier: string, previousIdentifiers: string[]): string {
+    if (previousIdentifiers.length >= 9) {
+      throw new Error('Error: too many empty clauses. on() takes at most 10 arguments.');
+    }
+    const identifier_ = `${this.storeName}Actions.${MorphOperators.standardizeIdentifier(identifier)}`;
+    const previousIdentifiers_ = previousIdentifiers
+      .map(i => `${this.storeName}Actions.${MorphOperators.standardizeIdentifier(i)}`)
+      .join(', ');
+    return previousIdentifiers.length === 0 ? identifier_ : `${identifier_}, ${previousIdentifiers_}`;
   }
 
   private addImports() {
