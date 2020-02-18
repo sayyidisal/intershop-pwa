@@ -1,4 +1,4 @@
-import { SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
+import { CaseClause, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
 export class ActionCreatorsReducerMorpher {
   constructor(public storeName: string, public reducerFile: SourceFile) {}
@@ -14,12 +14,13 @@ export class ActionCreatorsReducerMorpher {
   private updateReducer() {
     console.log('replacing reducers...');
     // retrieve reducer logic from old reducer
-    const switchStatements = [];
+    const switchStatements: { identifier: string; hasLogic: boolean; block: string }[] = [];
     this.reducerFile
       .getFunction(`${this.storeName}Reducer`)
       .getFirstDescendantByKind(SyntaxKind.CaseBlock)
       .getClauses()
-      .forEach(clause => {
+      .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
+      .forEach((clause: CaseClause) => {
         // is it a static return or is the payload used?
         const hasLogic =
           clause
@@ -27,8 +28,9 @@ export class ActionCreatorsReducerMorpher {
             .getStatements()[0]
             .getKind() !== SyntaxKind.ReturnStatement;
         // push information about switch statement to array
+        console.log(clause.getExpression().getText());
         switchStatements.push({
-          identifier: clause.getFirstChildByKindOrThrow(SyntaxKind.PropertyAccessExpression).getName(),
+          identifier: clause.getExpression().getText(),
           hasLogic,
           block: clause.getFirstChildByKindOrThrow(SyntaxKind.Block).getText(),
         });
@@ -58,11 +60,15 @@ export class ActionCreatorsReducerMorpher {
     // for each switch case, add a new on()-function
     switchStatements.forEach(statement => {
       // name of the actionCreator function
-      const type = statement.identifier.replace(/^\w/, c => c.toLowerCase());
+      let typeString: string;
+      statement.identifier.includes('.')
+        ? (typeString = statement.identifier.split('.')[1])
+        : (typeString = statement.identifier);
+      typeString = typeString.replace(/^\w/, c => c.toLowerCase());
       const arrowFunction = statement.hasLogic
         ? `(state, action) => ${statement.block}`
         : `state => ${statement.block}`;
-      createReducerFunction.addArgument(`on(${this.storeName}Actions.${type}, ${arrowFunction})`);
+      createReducerFunction.addArgument(`on(${this.storeName}Actions.${typeString}, ${arrowFunction})`);
     });
   }
 
