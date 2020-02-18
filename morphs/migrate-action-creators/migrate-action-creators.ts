@@ -6,18 +6,19 @@ import { ActionCreatorsReducerMorpher } from './migrate-action-creators.reducers
 
 const control = {
   actions: true,
-  reducer: false,
-  effects: false,
+  reducer: true,
+  effects: true,
 };
 const save = true;
 
 const storeName = 'contact';
 const project = new Project({
-  tsConfigFilePath: 'E:/Projects/pwa-github/tsconfig.json',
+  tsConfigFilePath: 'D:/Projects/pwa-github/tsconfig.json',
 });
 
+console.log(`migrating '${storeName}' store`);
 // migrate actions
-const actionMorph = new ActionCreatorsActionsMorpher(project.getSourceFile(`${storeName}.actions.ts`));
+const actionMorph = new ActionCreatorsActionsMorpher(project.getSourceFile(`${storeName}.actions.ts`), storeName);
 control.actions ? actionMorph.migrateActions() : null;
 
 // migrate reducer

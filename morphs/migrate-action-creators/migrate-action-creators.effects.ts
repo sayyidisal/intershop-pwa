@@ -57,7 +57,6 @@ export class ActionCreatorsEffectMorpher {
   private updateMap(pipe: CallExpression): CallExpression {
     const lastCall = pipe.getLastChildByKind(SyntaxKind.CallExpression);
     if (this.isMap(lastCall.getFirstChildByKind(SyntaxKind.Identifier).getText())) {
-      console.log(lastCall.getFirstChildByKind(SyntaxKind.Identifier).getText());
       return pipe;
     }
     return pipe;

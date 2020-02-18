@@ -1,10 +1,10 @@
-import { ClassDeclaration, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
+import { ClassDeclaration, NewExpression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
 export class ActionCreatorsActionsMorpher {
+  constructor(public actionsFile: SourceFile, public storeName: string) {}
   actionTypes: { [typeName: string]: string };
 
-  constructor(public actionsFile: SourceFile) {}
-
+  private string;
   migrateActions(updateGlobalReferences: boolean = true) {
     this.readActionTypes();
     this.replaceActions(updateGlobalReferences);
@@ -26,6 +26,7 @@ export class ActionCreatorsActionsMorpher {
         }),
         {}
       );
+    console.log(`    ${Object.keys(this.actionTypes).length} actions found`);
   }
 
   private replaceActions(updateGlobalReferences: boolean) {
@@ -75,6 +76,7 @@ export class ActionCreatorsActionsMorpher {
 
   private updateGlobalReferences(actionClass: ClassDeclaration) {
     console.log(`updating references for ${actionClass.getName()}...`);
+    let i = 0;
     actionClass.findReferencesAsNodes().forEach(reference => {
       // exclude tests and the actions file itself
       if (
@@ -84,32 +86,58 @@ export class ActionCreatorsActionsMorpher {
           .includes('spec.ts') &&
         reference.getSourceFile() !== this.actionsFile
       ) {
+        // update "new"-expressions
         const newExpression = reference.getFirstAncestor(
           ancestor => ancestor.getKind() === SyntaxKind.NewExpression
         ) as NewExpression;
-        // update "new"-expressions
         if (newExpression) {
           // swap new class instantiation to actionCreator call
           const hasArgument = newExpression.getArguments().length > 1;
           const argument = hasArgument ? newExpression.getArguments()[1].getText() : '';
-          // update dispatch calls
-          if (
-            newExpression.getParent().getKind() === SyntaxKind.CallExpression &&
-            newExpression.getParent().getFirstChildByKind(SyntaxKind.PropertyAccessExpression) &&
-            newExpression
-              .getParent()
-              .getFirstChildByKind(SyntaxKind.PropertyAccessExpression)
-              .getFirstChildByKind(SyntaxKind.Identifier)
-              .getText() === 'dispatch'
-          ) {
+
+          // update general new statements in function calls
+          if (newExpression.getParent().getKind() === SyntaxKind.CallExpression) {
             console.log(`    ${newExpression.getSourceFile().getBaseName()}`);
-            newExpression
+            // console.log(`argument: ${argument}`);
+            const callExpression = newExpression.getParentIfKindOrThrow(SyntaxKind.CallExpression);
+            const argumentText = this.updateNewExpressionString(newExpression, actionClass.getName(), argument);
+
+            callExpression.addArgument(argumentText);
+            callExpression.removeArgument(newExpression);
+            i++;
+          } else if (newExpression.getParent().getKind() === SyntaxKind.ArrowFunction) {
+            const arrow = newExpression.getParentIfKindOrThrow(SyntaxKind.ArrowFunction);
+
+            const argumentText = this.updateNewExpressionString(newExpression, actionClass.getName(), argument);
+            arrow.getFirstChildByKindOrThrow(SyntaxKind.NewExpression).replaceWithText(argumentText);
+
+            // ToDo: Multiple Parameters?
+            arrow
               .getParentIfKind(SyntaxKind.CallExpression)
-              .addArgument(`${actionClass.getName().replace(/^\w/, c => c.toLowerCase())}(${argument})`);
-            newExpression.getParentIfKind(SyntaxKind.CallExpression).removeArgument(newExpression);
+              .addArgument(`${arrow.getParameters()[0].getText()} => ${argumentText}`);
+            arrow.getParentIfKind(SyntaxKind.CallExpression).removeArgument(arrow);
+            i++;
           }
         }
+        // ToDo: maybe update other expressions
       }
     });
+
+    i > 0 ? console.log(`    updated ${i} reference${i > 1 ? 's' : ''}.`) : console.log('    no references found.');
+  }
+  updateNewExpressionString(newExpression: NewExpression, actionClassString: string, argumentString: string = '') {
+    if (newExpression.getExpression().getKind() === SyntaxKind.Identifier || SyntaxKind.PropertyAccessExpression) {
+      let argumentText;
+      if (newExpression.getExpression().getKind() === SyntaxKind.Identifier) {
+        argumentText = `${actionClassString.replace(/^\w/, c => c.toLowerCase())}(${argumentString})`;
+      } else {
+        argumentText = `${this.storeName}Actions.${actionClassString.replace(/^\w/, c =>
+          c.toLowerCase()
+        )}(${argumentString})`;
+      }
+      return argumentText;
+    } else {
+      throw new Error('newExpression has neither Identifier nor PropertyAccessExpression');
+    }
   }
 }
