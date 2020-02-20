@@ -1,7 +1,8 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 
-import { Product, ProductHelper } from 'ish-core/models/product/product.model';
+import { ProductContextFacade } from 'ish-core/facades/product-context.facade';
+import { ProductHelper } from 'ish-core/models/product/product.model';
 
 @Component({
   selector: 'ish-product-detail-actions',
@@ -9,17 +10,16 @@ import { Product, ProductHelper } from 'ish-core/models/product/product.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProductDetailActionsComponent {
-  @Input() product: Product;
-  @Output() productToCompare = new EventEmitter<void>();
-
   // TODO: to be removed once channelName inforamtion available in system
   channelName = 'inTRONICS';
 
   isMasterProduct = ProductHelper.isMasterProduct;
 
-  addToCompare() {
-    this.productToCompare.emit();
-  }
+  product$ = this.productContext.product$;
 
-  constructor(@Inject(DOCUMENT) public document: Document) {}
+  constructor(@Inject(DOCUMENT) public document: Document, private productContext: ProductContextFacade) {}
+
+  addToCompare() {
+    this.productContext.addToCompare();
+  }
 }

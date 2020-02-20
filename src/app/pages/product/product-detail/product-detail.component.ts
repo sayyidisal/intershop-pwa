@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
+import { ProductContextFacade } from 'ish-core/facades/product-context.facade';
 import { VariationOptionGroup } from 'ish-core/models/product-variation/variation-option-group.model';
 import { VariationSelection } from 'ish-core/models/product-variation/variation-selection.model';
 import {
@@ -17,15 +18,10 @@ import { ProductHelper, ProductPrices } from 'ish-core/models/product/product.mo
   templateUrl: './product-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductDetailComponent implements OnInit, OnDestroy {
-  @Input() product: ProductView | VariationProductView | VariationProductMasterView;
-  @Input() quantity: number;
+export class ProductDetailComponent implements OnInit {
   @Input() price: ProductPrices;
   @Input() variationOptions: VariationOptionGroup[];
-  @Output() productToBasket = new EventEmitter<{ sku: string; quantity: number }>();
-  @Output() productToCompare = new EventEmitter<string>();
   @Output() selectVariation = new EventEmitter<VariationSelection>();
-  @Output() quantityChange = new EventEmitter<number>();
 
   productDetailForm: FormGroup;
   readonly quantityControlName = 'quantity';
@@ -34,31 +30,18 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   isMasterProduct = ProductHelper.isMasterProduct;
   isRetailSet = ProductHelper.isRetailSet;
 
-  private destroy$ = new Subject();
+  product$: Observable<ProductView | VariationProductView | VariationProductMasterView>;
+
+  constructor(private productContext: ProductContextFacade) {}
 
   ngOnInit() {
+    this.product$ = this.productContext.product$;
     this.productDetailForm = new FormGroup({
-      [this.quantityControlName]: new FormControl(this.quantity || this.product.minOrderQuantity),
+      [this.quantityControlName]: new FormControl(),
     });
-    this.productDetailForm
-      .get(this.quantityControlName)
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(this.quantityChange);
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-  }
-
-  addToBasket() {
-    this.productToBasket.emit({
-      sku: this.product.sku,
-      quantity: this.productDetailForm.get(this.quantityControlName).value,
-    });
-  }
-
-  addToCompare() {
-    this.productToCompare.emit(this.product.sku);
+    this.productContext.connectQuantity(
+      this.productDetailForm.get(this.quantityControlName).valueChanges.pipe(map<string, number>(v => +v))
+    );
   }
 
   variationSelected(selection: VariationSelection) {

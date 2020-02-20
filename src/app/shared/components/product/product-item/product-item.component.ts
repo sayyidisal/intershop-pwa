@@ -4,14 +4,14 @@ import {
   EventEmitter,
   Input,
   OnChanges,
-  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
-import { filter, startWith, take, takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { filter, startWith, take } from 'rxjs/operators';
 
+import { ProductContextFacade } from 'ish-core/facades/product-context.facade';
 import { ShoppingFacade } from 'ish-core/facades/shopping.facade';
 import { Category } from 'ish-core/models/category/category.model';
 import { ProductVariationHelper } from 'ish-core/models/product-variation/product-variation.helper';
@@ -57,9 +57,9 @@ export const DEFAULT_CONFIGURATION: Readonly<ProductItemContainerConfiguration> 
   selector: 'ish-product-item',
   templateUrl: './product-item.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ProductContextFacade],
 })
-export class ProductItemComponent implements OnInit, OnChanges, OnDestroy {
-  private static REQUIRED_COMPLETENESS_LEVEL = ProductCompletenessLevel.List;
+export class ProductItemComponent implements OnInit, OnChanges {
   /**
    * The Product SKU to render a product item for.
    */
@@ -84,27 +84,18 @@ export class ProductItemComponent implements OnInit, OnChanges, OnDestroy {
   productVariationOptions$: Observable<VariationOptionGroup[]>;
   isInCompareList$: Observable<boolean>;
 
-  private sku$ = new ReplaySubject<string>(1);
-  private destroy$ = new Subject();
+  private sku$: Observable<string>;
 
-  constructor(private shoppingFacade: ShoppingFacade) {}
-
-  ngOnDestroy() {
-    this.destroy$.next();
-  }
+  constructor(private shoppingFacade: ShoppingFacade, private productContext: ProductContextFacade) {}
 
   // tslint:disable:initialize-observables-in-declaration
   ngOnInit() {
-    this.productSkuChange
-      .pipe(
-        startWith(this.productSku),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(this.sku$);
+    this.productContext.setCompletenessLevel(ProductCompletenessLevel.List);
+    this.productContext.connectSKU(this.productSkuChange.pipe(startWith(this.productSku)));
+    this.sku$ = this.productContext.sku$;
 
-    this.product$ = this.shoppingFacade.product$(this.sku$, ProductItemComponent.REQUIRED_COMPLETENESS_LEVEL);
-
-    this.loading$ = this.shoppingFacade.productNotReady$(this.sku$, ProductItemComponent.REQUIRED_COMPLETENESS_LEVEL);
+    this.product$ = this.productContext.product$;
+    this.loading$ = this.productContext.loading$;
 
     this.productVariationOptions$ = this.shoppingFacade.productVariationOptions$(this.sku$);
 

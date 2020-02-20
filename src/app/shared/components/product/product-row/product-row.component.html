@@ -86,7 +86,6 @@
                   [readOnly]="configuration.readOnly"
                   [allowZeroQuantity]="configuration.allowZeroQuantity"
                   [quantityLabel]="configuration.quantityLabel"
-                  [product]="product"
                   [parentForm]="productItemForm"
                   [controlName]="quantityControlName"
                 ></ish-product-quantity>
@@ -96,11 +95,7 @@
                 class="action-container addtocart-container"
                 [ngClass]="configuration.quantityLabel === ' ' ? 'col-12 col-lg-7' : 'col-12 col-xl-5'"
               >
-                <ish-product-add-to-basket
-                  *ngIf="configuration.displayAddToBasket"
-                  [product]="product"
-                  (productToBasket)="addToBasket()"
-                ></ish-product-add-to-basket>
+                <ish-product-add-to-basket *ngIf="configuration.displayAddToBasket"></ish-product-add-to-basket>
               </div>
             </form>
           </ng-container>

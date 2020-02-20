@@ -54,10 +54,8 @@
     ></ish-lazy-product-add-to-wishlist>
     <ish-product-add-to-basket
       *ngIf="configuration.displayAddToBasket && !isMasterProduct(product)"
-      [product]="product"
       displayType="icon"
       class="btn-link"
-      (productToBasket)="addToBasket()"
     ></ish-product-add-to-basket>
   </div>
 </div>

@@ -1,16 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChange,
-  SimpleChanges,
-} from '@angular/core';
-import { FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { FormGroup, Validators } from '@angular/forms';
 import { range } from 'lodash-es';
+import { Observable } from 'rxjs';
+import { map, take, tap } from 'rxjs/operators';
 
-import { Product } from 'ish-core/models/product/product.model';
+import { ProductContextFacade } from 'ish-core/facades/product-context.facade';
+import { mapToProperty } from 'ish-core/utils/operators';
 import { SelectOption } from 'ish-shared/forms/components/select/select.component';
 import { SpecialValidators } from 'ish-shared/forms/validators/special-validators';
 
@@ -25,24 +20,48 @@ function generateSelectOptionsForRange(min: number, max: number): SelectOption[]
   templateUrl: './product-quantity.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProductQuantityComponent implements OnInit, OnChanges {
+export class ProductQuantityComponent {
   @Input() readOnly = false;
   @Input() allowZeroQuantity = false;
   @Input() quantityLabel = 'product.quantity.label';
-  @Input() product: Product;
   @Input() parentForm: FormGroup;
   @Input() controlName: string;
   @Input() type?: 'input' | 'select' | 'counter';
   @Input() class?: string;
 
-  quantityOptions: SelectOption[];
+  isAvailable$: Observable<boolean>;
+  quantity$: Observable<number>;
+  quantityOptions$: Observable<SelectOption[]>;
+  minOrderQuantity$: Observable<number>;
+  maxOrderQuantity$: Observable<number>;
 
-  ngOnInit() {
-    this.parentForm.get(this.controlName).setValidators(this.getValidations());
-  }
-
-  get quantity() {
-    return this.parentForm.get(this.controlName) && this.parentForm.get(this.controlName).value;
+  constructor(productContext: ProductContextFacade) {
+    this.isAvailable$ = productContext.product$.pipe(
+      tap(product => {
+        if (this.type === 'input') {
+          this.parentForm
+            .get(this.controlName)
+            .setValidators(
+              Validators.compose([
+                Validators.required,
+                Validators.min(this.allowZeroQuantity ? 0 : product.minOrderQuantity),
+                Validators.max(product.maxOrderQuantity),
+                SpecialValidators.integer,
+              ])
+            );
+        }
+        productContext.quantity$
+          .pipe(take(1))
+          .subscribe(quantity => this.parentForm.get(this.controlName).setValue(quantity));
+      }),
+      map(product => product.inStock && product.availability)
+    );
+    this.quantity$ = productContext.quantity$;
+    this.quantityOptions$ = productContext.product$.pipe(
+      map(product => generateSelectOptionsForRange(product.minOrderQuantity, product.maxOrderQuantity))
+    );
+    this.minOrderQuantity$ = productContext.product$.pipe(mapToProperty('minOrderQuantity'));
+    this.maxOrderQuantity$ = productContext.product$.pipe(mapToProperty('maxOrderQuantity'));
   }
 
   get labelClass() {
@@ -53,31 +72,5 @@ export class ProductQuantityComponent implements OnInit, OnChanges {
     return this.quantityLabel.trim() === ''
       ? 'col-12' + (this.class ? this.class : '')
       : 'col-6' + (this.class ? this.class : '');
-  }
-
-  getValidations(): ValidatorFn {
-    if (this.type === 'input') {
-      return Validators.compose([
-        Validators.required,
-        Validators.min(this.allowZeroQuantity ? 0 : this.product.minOrderQuantity),
-        Validators.max(this.product.maxOrderQuantity),
-        SpecialValidators.integer,
-      ]);
-    }
-  }
-
-  ngOnChanges(change: SimpleChanges) {
-    if (this.type === 'select') {
-      this.createSelectOptions(change.product);
-    }
-  }
-
-  private createSelectOptions(change: SimpleChange) {
-    if (change && change.currentValue) {
-      this.quantityOptions = generateSelectOptionsForRange(
-        this.product.minOrderQuantity,
-        this.product.maxOrderQuantity
-      );
-    }
   }
 }

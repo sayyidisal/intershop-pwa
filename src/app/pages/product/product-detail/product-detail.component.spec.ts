@@ -3,11 +3,16 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { MockComponent } from 'ng-mocks';
+import { of } from 'rxjs';
+import { instance, mock, when } from 'ts-mockito';
 
+import { ProductContextFacade } from 'ish-core/facades/product-context.facade';
 import { FeatureToggleModule } from 'ish-core/feature-toggle.module';
-import { ProductView } from 'ish-core/models/product-view/product-view.model';
+import { createProductView } from 'ish-core/models/product-view/product-view.model';
+import { Product } from 'ish-core/models/product/product.model';
 import { configurationReducer } from 'ish-core/store/configuration/configuration.reducer';
 import { ngrxTesting } from 'ish-core/utils/dev/ngrx-testing';
+import { categoryTree } from 'ish-core/utils/dev/test-data-utils';
 import { AccordionItemComponent } from 'ish-shared/components/common/accordion-item/accordion-item.component';
 import { AccordionComponent } from 'ish-shared/components/common/accordion/accordion.component';
 import { ProductAddToBasketComponent } from 'ish-shared/components/product/product-add-to-basket/product-add-to-basket.component';
@@ -30,20 +35,22 @@ import { ProductDetailComponent } from './product-detail.component';
 describe('Product Detail Component', () => {
   let component: ProductDetailComponent;
   let fixture: ComponentFixture<ProductDetailComponent>;
-  let product: ProductView;
   let element: HTMLElement;
+  let productContext: ProductContextFacade;
+  const product = createProductView(
+    { sku: 'sku', name: 'Test Product', longDescription: 'long description', manufacturer: undefined } as Product,
+    categoryTree()
+  );
 
   beforeEach(async(() => {
-    product = { sku: 'sku' } as ProductView;
-    product.name = 'Test Product';
-    product.longDescription = 'long description';
-    product.manufacturer = undefined;
+    productContext = mock(ProductContextFacade);
+    when(productContext.product$).thenReturn(of(product));
 
     TestBed.configureTestingModule({
       imports: [
         FeatureToggleModule,
         ReactiveFormsModule,
-        RouterTestingModule.withRoutes([{ path: 'search', component: ProductDetailComponent }]),
+        RouterTestingModule,
         TranslateModule.forRoot(),
         ngrxTesting({ reducers: { configuration: configurationReducer } }),
       ],
@@ -65,15 +72,15 @@ describe('Product Detail Component', () => {
         MockComponent(ProductVariationSelectComponent),
         ProductDetailComponent,
       ],
-    })
-      .compileComponents()
-      .then(() => {
-        fixture = TestBed.createComponent(ProductDetailComponent);
-        component = fixture.componentInstance;
-        element = fixture.nativeElement;
-        component.product = product;
-      });
+      providers: [{ provide: ProductContextFacade, useFactroy: instance(productContext) }],
+    }).compileComponents();
   }));
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(ProductDetailComponent);
+    component = fixture.componentInstance;
+    element = fixture.nativeElement;
+  });
 
   it('should be created', () => {
     expect(component).toBeTruthy();

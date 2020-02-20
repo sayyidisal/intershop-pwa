@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 
 import { CheckoutFacade } from 'ish-core/facades/checkout.facade';
-import { Product } from 'ish-core/models/product/product.model';
+import { ProductContextFacade } from 'ish-core/facades/product-context.facade';
 import { whenFalsy } from 'ish-core/utils/operators';
 
 /**
@@ -11,11 +11,9 @@ import { whenFalsy } from 'ish-core/utils/operators';
  *
  * @example
  * <ish-product-add-to-basket
-    [product]="product"
     [class]="'btn-lg btn-block'"
     [disabled]="productDetailForm.invalid"
     [translationKey]="isRetailSet(product) ? 'product.add_to_cart.retailset.link' : 'product.add_to_cart.link'"
-    (productToBasket)="addToBasket()"
   ></ish-product-add-to-basket>
  */
 @Component({
@@ -27,10 +25,6 @@ import { whenFalsy } from 'ish-core/utils/operators';
 export class ProductAddToBasketComponent implements OnInit, OnDestroy {
   basketLoading$: Observable<boolean>;
 
-  /**
-   * The product that can be added to basket
-   */
-  @Input() product: Product;
   /**
    * When true, it specifies that the button should be disabled
    */
@@ -47,12 +41,10 @@ export class ProductAddToBasketComponent implements OnInit, OnDestroy {
    * translationKey for the button label
    */
   @Input() translationKey = 'product.add_to_cart.link';
-  /**
-   * button was clicked event
-   */
-  @Output() productToBasket = new EventEmitter<void>();
 
-  constructor(private checkoutFacade: CheckoutFacade) {}
+  isAvailable$: Observable<boolean>;
+
+  constructor(private checkoutFacade: CheckoutFacade, private productContext: ProductContextFacade) {}
 
   // fires 'true' after add To Cart is clicked and basket is loading
   displaySpinner$ = new BehaviorSubject(false);
@@ -60,6 +52,8 @@ export class ProductAddToBasketComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject();
 
   ngOnInit() {
+    this.isAvailable$ = this.productContext.product$.pipe(map(product => product.inStock && product.availability));
+
     this.basketLoading$ = this.checkoutFacade.basketLoading$;
 
     // update emitted to display spinning animation
@@ -72,7 +66,7 @@ export class ProductAddToBasketComponent implements OnInit, OnDestroy {
   }
 
   addToBasket() {
-    this.productToBasket.emit();
+    this.productContext.addToBasket();
     this.displaySpinner$.next(true);
   }
 

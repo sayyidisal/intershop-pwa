@@ -30,8 +30,6 @@ import {
   getProductLinks,
   getProductVariationOptions,
   getProducts,
-  getSelectedProduct,
-  getSelectedProductVariationOptions,
 } from 'ish-core/store/shopping/products';
 import { LoadPromotion, getPromotion, getPromotions } from 'ish-core/store/shopping/promotions';
 import {
@@ -63,11 +61,11 @@ export class ShoppingFacade {
   );
 
   // PRODUCT
-  selectedProduct$ = this.store.pipe(select(getSelectedProduct));
-  selectedProductVariationOptions$ = this.store.pipe(select(getSelectedProductVariationOptions));
-  productDetailLoading$ = this.selectedProduct$.pipe(
-    map(p => !ProductHelper.isReadyForDisplay(p, ProductCompletenessLevel.Detail))
-  );
+  // selectedProduct$ = this.store.pipe(select(getSelectedProduct));
+  // selectedProductVariationOptions$ = this.store.pipe(select(getSelectedProductVariationOptions));
+  // productDetailLoading$ = this.selectedProduct$.pipe(
+  //   map(p => !ProductHelper.isReadyForDisplay(p, ProductCompletenessLevel.Detail))
+  // );
 
   product$(sku: string | Observable<string>, level: ProductCompletenessLevel) {
     return toObservable(sku).pipe(
