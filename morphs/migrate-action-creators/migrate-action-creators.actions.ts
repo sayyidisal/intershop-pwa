@@ -1,4 +1,11 @@
-import { ClassDeclaration, NewExpression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
+import {
+  CallExpression,
+  ClassDeclaration,
+  NewExpression,
+  SourceFile,
+  SyntaxKind,
+  VariableDeclarationKind,
+} from 'ts-morph';
 
 export class ActionCreatorsActionsMorpher {
   constructor(public actionsFile: SourceFile, public storeName: string) {}
@@ -86,10 +93,13 @@ export class ActionCreatorsActionsMorpher {
           .includes('spec.ts') &&
         reference.getSourceFile() !== this.actionsFile
       ) {
-        // update "new"-expressions
         const newExpression = reference.getFirstAncestor(
           ancestor => ancestor.getKind() === SyntaxKind.NewExpression
         ) as NewExpression;
+        const callExpression = reference.getFirstAncestor(
+          ancestor => ancestor.getKind() === SyntaxKind.CallExpression
+        ) as CallExpression;
+        // update "new"-expressions
         if (newExpression) {
           console.log(`    ${newExpression.getSourceFile().getBaseName()}`);
           // swap new class instantiation to actionCreator call
@@ -98,11 +108,11 @@ export class ActionCreatorsActionsMorpher {
 
           // update general new statements in function calls
           if (newExpression.getParent().getKind() === SyntaxKind.CallExpression) {
-            const callExpression = newExpression.getParentIfKindOrThrow(SyntaxKind.CallExpression);
+            const callExpParent = newExpression.getParentIfKindOrThrow(SyntaxKind.CallExpression);
             const argumentText = this.updateNewExpressionString(actionClass.getName(), argument);
 
-            callExpression.addArgument(argumentText);
-            callExpression.removeArgument(newExpression);
+            callExpParent.addArgument(argumentText);
+            callExpParent.removeArgument(newExpression);
             i++;
           } else if (newExpression.getParent().getKind() === SyntaxKind.ArrowFunction) {
             // update new statements in arrow functions
@@ -118,7 +128,21 @@ export class ActionCreatorsActionsMorpher {
             arrow.getParentIfKind(SyntaxKind.CallExpression).removeArgument(arrow);
             i++;
           }
+        } else if (callExpression) {
+          // update actions in call expressions
+          if (
+            callExpression
+              .getArguments()
+              .filter(arg => arg.getKind() === SyntaxKind.Identifier)
+              .includes(reference)
+          ) {
+            callExpression.addArgument(actionClass.getName().replace(/^\w/, c => c.toLowerCase()));
+            callExpression.removeArgument(reference);
+
+            i++;
+          }
         }
+
         // ToDo: maybe update other expressions
       }
     });

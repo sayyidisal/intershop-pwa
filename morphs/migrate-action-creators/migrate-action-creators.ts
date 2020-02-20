@@ -9,7 +9,7 @@ const control = {
   reducer: true,
   effects: true,
 };
-const save = false;
+const save = true;
 
 const storeName = 'contact';
 const project = new Project({
