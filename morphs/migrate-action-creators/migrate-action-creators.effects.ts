@@ -8,10 +8,6 @@ export class ActionCreatorsEffectMorpher {
       moduleSpecifier: '@ngrx/store',
       namedImports: ['createEffect'],
     });
-    this.effectsFile.addImportDeclaration({
-      moduleSpecifier: `./${this.storeName}.actions`,
-      namespaceImport: `${this.storeName}Actions`,
-    });
   }
 
   migrateEffects() {
@@ -34,6 +30,8 @@ export class ActionCreatorsEffectMorpher {
         });
         effect.remove();
       });
+    this.effectsFile.fixMissingImports();
+    this.effectsFile.fixUnusedIdentifiers();
   }
 
   private updateOfType(pipe: CallExpression): CallExpression {
@@ -47,7 +45,7 @@ export class ActionCreatorsEffectMorpher {
           const argument = exp.getArguments()[0];
           exp.removeTypeArgument(exp.getFirstChildByKind(SyntaxKind.TypeReference));
           const t = argument.getLastChildByKind(SyntaxKind.Identifier) || argument;
-          exp.addArgument(`${this.storeName}Actions.${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
+          exp.addArgument(`${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
           exp.removeArgument(argument);
         }
       });

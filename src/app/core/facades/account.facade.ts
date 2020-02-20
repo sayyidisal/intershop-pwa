@@ -17,13 +17,8 @@ import {
   getAddressesLoading,
   getAllAddresses,
 } from 'ish-core/store/addresses';
-import {
-  createContact,
-  getContactLoading,
-  getContactSubjects,
-  getContactSuccess,
-  loadContact,
-} from 'ish-core/store/contact/contact';
+import { getContactLoading, getContactSubjects, getContactSuccess } from 'ish-core/store/contact/contact';
+import { CreateContact, LoadContact } from 'ish-core/store/contact/contact/contact.actions';
 import { LoadOrders, getOrders, getOrdersLoading, getSelectedOrder } from 'ish-core/store/orders';
 import {
   CreateUser,
@@ -168,16 +163,16 @@ export class AccountFacade {
 
   // CONTACT US
   contactSubjects$() {
-    this.store.dispatch(loadContact());
+    this.store.dispatch(new LoadContact());
     return this.store.pipe(select(getContactSubjects));
   }
   contactLoading$ = this.store.pipe(select(getContactLoading));
   contactSuccess$ = this.store.pipe(select(getContactSuccess));
 
   resetContactState() {
-    this.store.dispatch(loadContact());
+    this.store.dispatch(new LoadContact());
   }
   createContact(contact: Contact) {
-    this.store.dispatch(createContact({ contact }));
+    this.store.dispatch(new CreateContact({ contact }));
   }
 }

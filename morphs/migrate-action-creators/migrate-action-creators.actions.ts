@@ -4,7 +4,6 @@ export class ActionCreatorsActionsMorpher {
   constructor(public actionsFile: SourceFile, public storeName: string) {}
   actionTypes: { [typeName: string]: string };
 
-  private string;
   migrateActions(updateGlobalReferences: boolean = true) {
     this.readActionTypes();
     this.replaceActions(updateGlobalReferences);
@@ -14,6 +13,7 @@ export class ActionCreatorsActionsMorpher {
     this.actionsFile.fixMissingImports();
     this.actionsFile.fixUnusedIdentifiers();
   }
+
   private readActionTypes() {
     console.log('reading action types...');
     this.actionTypes = this.actionsFile
@@ -91,24 +91,24 @@ export class ActionCreatorsActionsMorpher {
           ancestor => ancestor.getKind() === SyntaxKind.NewExpression
         ) as NewExpression;
         if (newExpression) {
+          console.log(`    ${newExpression.getSourceFile().getBaseName()}`);
           // swap new class instantiation to actionCreator call
           const hasArgument = newExpression.getArguments().length > 0;
-          const argument = hasArgument ? newExpression.getArguments()[0].getText() : '';
+          const argument = hasArgument ? `{payload: ${newExpression.getArguments()[0].getText()}}` : '';
 
           // update general new statements in function calls
           if (newExpression.getParent().getKind() === SyntaxKind.CallExpression) {
-            console.log(`    ${newExpression.getSourceFile().getBaseName()}`);
-            // console.log(`argument: ${argument}`);
             const callExpression = newExpression.getParentIfKindOrThrow(SyntaxKind.CallExpression);
-            const argumentText = this.updateNewExpressionString(newExpression, actionClass.getName(), argument);
+            const argumentText = this.updateNewExpressionString(actionClass.getName(), argument);
 
             callExpression.addArgument(argumentText);
             callExpression.removeArgument(newExpression);
             i++;
           } else if (newExpression.getParent().getKind() === SyntaxKind.ArrowFunction) {
+            // update new statements in arrow functions
             const arrow = newExpression.getParentIfKindOrThrow(SyntaxKind.ArrowFunction);
 
-            const argumentText = this.updateNewExpressionString(newExpression, actionClass.getName(), argument);
+            const argumentText = this.updateNewExpressionString(actionClass.getName(), argument);
             arrow.getFirstChildByKindOrThrow(SyntaxKind.NewExpression).replaceWithText(argumentText);
 
             // ToDo: Multiple Parameters?
@@ -122,22 +122,10 @@ export class ActionCreatorsActionsMorpher {
         // ToDo: maybe update other expressions
       }
     });
-
     i > 0 ? console.log(`    updated ${i} reference${i > 1 ? 's' : ''}.`) : console.log('    no references found.');
   }
-  updateNewExpressionString(newExpression: NewExpression, actionClassString: string, argumentString: string = '') {
-    if (newExpression.getExpression().getKind() === SyntaxKind.Identifier || SyntaxKind.PropertyAccessExpression) {
-      let argumentText;
-      if (newExpression.getExpression().getKind() === SyntaxKind.Identifier) {
-        argumentText = `${actionClassString.replace(/^\w/, c => c.toLowerCase())}(${argumentString})`;
-      } else {
-        argumentText = `${this.storeName}Actions.${actionClassString.replace(/^\w/, c =>
-          c.toLowerCase()
-        )}(${argumentString})`;
-      }
-      return argumentText;
-    } else {
-      throw new Error('newExpression has neither Identifier nor PropertyAccessExpression');
-    }
+
+  updateNewExpressionString(actionClassString: string, argumentString: string = '') {
+    return `${actionClassString.replace(/^\w/, c => c.toLowerCase())}(${argumentString})`;
   }
 }

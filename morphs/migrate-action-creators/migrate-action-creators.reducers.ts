@@ -30,7 +30,7 @@ export class ActionCreatorsReducerMorpher {
       .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
       .forEach((clause: CaseClause) => {
         // check whether clause is an empty clause
-        if (clause.getStatements().length == 0) {
+        if (clause.getStatements().length === 0) {
           previousIdentifiers.push(clause.getExpression().getText());
           return;
         }
@@ -81,10 +81,8 @@ export class ActionCreatorsReducerMorpher {
     if (previousIdentifiers.length >= 9) {
       throw new Error('Error: too many empty clauses. on() takes at most 10 arguments.');
     }
-    const identifier_ = `${this.storeName}Actions.${MorphOperators.standardizeIdentifier(identifier)}`;
-    const previousIdentifiers_ = previousIdentifiers
-      .map(i => `${this.storeName}Actions.${MorphOperators.standardizeIdentifier(i)}`)
-      .join(', ');
+    const identifier_ = `${MorphOperators.standardizeIdentifier(identifier)}`;
+    const previousIdentifiers_ = previousIdentifiers.map(i => `${MorphOperators.standardizeIdentifier(i)}`).join(', ');
     return previousIdentifiers.length === 0 ? identifier_ : `${identifier_}, ${previousIdentifiers_}`;
   }
 
@@ -92,10 +90,6 @@ export class ActionCreatorsReducerMorpher {
     this.reducerFile.addImportDeclaration({
       moduleSpecifier: '@ngrx/store',
       namedImports: ['on'],
-    });
-    this.reducerFile.addImportDeclaration({
-      moduleSpecifier: `./${this.storeName}.actions`,
-      namespaceImport: `${this.storeName}Actions`,
     });
   }
 

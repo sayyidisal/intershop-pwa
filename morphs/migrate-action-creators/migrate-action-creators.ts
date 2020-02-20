@@ -5,28 +5,33 @@ import { ActionCreatorsEffectMorpher } from './migrate-action-creators.effects';
 import { ActionCreatorsReducerMorpher } from './migrate-action-creators.reducers';
 
 const control = {
-  actions: false,
+  actions: true,
   reducer: true,
-  effects: false,
+  effects: true,
 };
-const save = true;
+const save = false;
 
 const storeName = 'contact';
 const project = new Project({
-  tsConfigFilePath: 'D:/Projects/pwa-github/tsconfig.json',
+  tsConfigFilePath: 'E:/Projects/pwa-github/tsconfig.json',
 });
+/*
+Please make sure there are no star imports used in your store!
+*/
 
 console.log(`migrating '${storeName}' store`);
-// migrate actions
+// instantiate morphers
 const actionMorph = new ActionCreatorsActionsMorpher(project.getSourceFile(`${storeName}.actions.ts`), storeName);
+const reducerMorph = new ActionCreatorsReducerMorpher(storeName, project.getSourceFile(`${storeName}.reducer.ts`));
+const effectsMorph = new ActionCreatorsEffectMorpher(storeName, project.getSourceFile(`${storeName}.effects.ts`));
+
+// migrate actions
 control.actions ? actionMorph.migrateActions() : null;
 
 // migrate reducer
-const reducerMorph = new ActionCreatorsReducerMorpher(storeName, project.getSourceFile(`${storeName}.reducer.ts`));
 control.reducer ? reducerMorph.migrateReducer() : null;
 
 // migrate effects
-const effectsMorph = new ActionCreatorsEffectMorpher(storeName, project.getSourceFile(`${storeName}.effects.ts`));
 control.effects ? effectsMorph.migrateEffects() : null;
 
 save ? project.save() : null;
