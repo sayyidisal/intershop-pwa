@@ -28,7 +28,7 @@ export class CompareEffects {
 
   @Effect()
   completeProductsForComparePage$ = this.actions$.pipe(
-    ofRoute('compare'),
+    ofRoute(/compare/),
     withLatestFrom(this.store.pipe(select(getCompareProductsSKUs))),
     mergeMap(([, skus]) => skus.map(sku => new LoadProductIfNotLoaded({ sku, level: ProductCompletenessLevel.Detail })))
   );

@@ -50,7 +50,7 @@ export class SearchEffects {
    */
   @Effect()
   listenToRouteForSearchTerm$ = this.actions$.pipe(
-    ofRoute('search/:searchTerm'),
+    ofRoute(),
     mapToParam<string>('searchTerm'),
     whenTruthy(),
     map(searchTerm => new SelectSearchTerm({ searchTerm }))

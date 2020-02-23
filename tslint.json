@@ -498,6 +498,7 @@
           "^.*/src/app/core/[a-z][a-z0-9-]+\\.module\\.ts",
           "^.*/src/app/core/configurations/.*",
           // custom routes
+          "^.*/src/app/pages/top-level-language.route.ts",
           "^.*/src/app/core/routing/([a-z0-9-]+)/\\1\\.route\\.ts",
           "^.*/src/app/core/routing/([a-z0-9-]+)/\\1\\-route\\.pipe\\.ts",
           // extra artifacts

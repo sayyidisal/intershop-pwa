@@ -22,15 +22,15 @@ describe('Viewconf Integration', () => {
   it('should extract checkoutStep from routing data to store', () => {
     expect(getCheckoutStep(store$.state)).toBeUndefined();
 
-    store$.dispatch(new RouteNavigation({ path: 'checkout', data: { checkoutStep: 1 } }));
+    store$.dispatch(new RouteNavigation({ path: 'checkout/addresses', data: { checkoutStep: 1 } }));
 
     expect(getCheckoutStep(store$.state)).toBe(1);
 
-    store$.dispatch(new RouteNavigation({ path: 'checkout', data: { checkoutStep: 2 } }));
+    store$.dispatch(new RouteNavigation({ path: 'checkout/payment', data: { checkoutStep: 2 } }));
 
     expect(getCheckoutStep(store$.state)).toBe(2);
 
-    store$.dispatch(new RouteNavigation({ path: 'checkout' }));
+    store$.dispatch(new RouteNavigation({ path: 'checkout/unrelated' }));
 
     expect(getCheckoutStep(store$.state)).toBeUndefined();
   });

@@ -81,7 +81,7 @@ export class BasketPaymentEffects {
    */
   @Effect()
   sendPaymentRedirectData$ = this.actions$.pipe(
-    ofRoute(['checkout/payment', 'checkout/review']),
+    ofRoute(/checkout\/(payment|review)/),
     mapToPayloadProperty('queryParams'),
     // don't do anything in case of RedirectAfterCheckout
     filter(queryParams => queryParams && queryParams.redirect && !queryParams.orderId),

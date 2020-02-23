@@ -122,8 +122,9 @@ export class SeoEffects {
 
   @Effect()
   seoSearch$ = this.actions$.pipe(
-    ofRoute('search/:searchTerm'),
+    ofRoute(),
     mapToParam<string>('searchTerm'),
+    whenTruthy(),
     switchMap(searchTerm => this.translate.get('seo.title.search', { 0: searchTerm })),
     whenTruthy(),
     map(metaTitle => new SetSeoAttributes({ metaTitle }))
@@ -131,7 +132,9 @@ export class SeoEffects {
 
   @Effect()
   seoContentPage$ = this.actions$.pipe(
-    ofRoute('page/:contentPageId'),
+    ofRoute(),
+    mapToParam('contentPageId'),
+    whenTruthy(),
     switchMap(() =>
       this.store.pipe(
         select(getSelectedContentPage),

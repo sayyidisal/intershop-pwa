@@ -138,7 +138,7 @@ export class OrdersEffects {
    */
   @Effect()
   routeListenerForSelectingOrder$ = this.actions$.pipe(
-    ofRoute(/^(account\/orders.*|checkout\/receipt)/),
+    ofRoute(/(account\/orders|checkout\/receipt)/),
     mapToParam<string>('orderId'),
     withLatestFrom(this.store.pipe(select(getSelectedOrderId))),
     filter(([fromAction, selectedOrderId]) => fromAction && fromAction !== selectedOrderId),
@@ -166,7 +166,7 @@ export class OrdersEffects {
    */
   @Effect()
   returnFromRedirectAfterOrderCreation$ = this.actions$.pipe(
-    ofRoute(['checkout/receipt', 'checkout/payment']),
+    ofRoute(/checkout\/(receipt|payment)/),
     mapToPayloadProperty('queryParams'),
     filter(queryParams => queryParams && queryParams.redirect && queryParams.orderId),
     switchMap(queryParams =>

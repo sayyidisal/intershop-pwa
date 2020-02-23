@@ -125,7 +125,7 @@ export class UserEffects {
       map(snapshot => snapshot.root.queryParams.returnUrl as string)
     ),
     this.actions$.pipe(
-      ofRoute('login'),
+      ofRoute(/login/),
       mapToQueryParam<string>('returnUrl'),
       map(returnUrl => returnUrl || '/account'),
       switchMap(returnUrl =>

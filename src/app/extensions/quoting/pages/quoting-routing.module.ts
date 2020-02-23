@@ -4,6 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { FeatureToggleGuard } from 'ish-core/feature-toggle.module';
 import { AuthGuard } from 'ish-core/guards/auth.guard';
 
+import { topLevelRouteWrap } from '../../../pages/top-level-language.route';
+
 const routes: Routes = [
   {
     path: 'quote-list',
@@ -27,7 +29,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild(topLevelRouteWrap(routes))],
   exports: [RouterModule],
 })
 export class QuotingRoutingModule {}

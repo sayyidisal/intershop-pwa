@@ -4,6 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { matchCategoryRoute } from 'ish-core/routing/category/category.route';
 import { matchProductRoute } from 'ish-core/routing/product/product.route';
 
+import { topLevelRouteWrap } from './top-level-language.route';
+
 const routes: Routes = [
   {
     matcher: matchProductRoute,
@@ -17,6 +19,6 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild(topLevelRouteWrap(routes))],
 })
 export class AppLastRoutingModule {}

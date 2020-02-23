@@ -11,7 +11,7 @@ export class ViewconfEffects {
 
   @Effect()
   retrieveCheckoutStepFromRouting$ = this.actions$.pipe(
-    ofRoute(/^checkout.*/),
+    ofRoute(/checkout\//),
     mapToData<number>('checkoutStep'),
     map(step => new SetCheckoutStep({ step }))
   );

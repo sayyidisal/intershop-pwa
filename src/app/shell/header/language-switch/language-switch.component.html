@@ -11,7 +11,7 @@
         <ul *ngIf="availableLocales.length">
           <ng-container *ngFor="let l of availableLocales">
             <li *ngIf="l.lang !== locale.lang">
-              <a [href]="location | makeHref: { redirect: '1', lang: l.lang }"> {{ l.displayName }} </a>
+              <a [href]="'/' + l.displayName + '/home'"> {{ l.displayName }} </a>
             </li>
           </ng-container>
         </ul>

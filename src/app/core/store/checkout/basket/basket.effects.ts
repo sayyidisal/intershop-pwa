@@ -171,7 +171,7 @@ export class BasketEffects {
    */
   @Effect()
   routeListenerForResettingBasketErrors$ = this.actions$.pipe(
-    ofRoute(/^(basket|checkout.*)/),
+    ofRoute(/(basket|checkout.*)/),
     mapToQueryParam<string>('error'),
     whenFalsy(),
     mapTo(new basketActions.ResetBasketErrors())
