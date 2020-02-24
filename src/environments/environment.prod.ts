@@ -22,8 +22,8 @@ export const environment: Environment = {
   defaultProductListingViewType: 'grid',
   serviceWorker: true,
   locales: [
-    { lang: 'de_DE', currency: 'EUR', value: 'de', displayName: 'se-sv', displayLong: 'German (Germany)' },
     { lang: 'en_US', currency: 'USD', value: 'en', displayName: 'en-us', displayLong: 'English (United States)' },
+    { lang: 'de_DE', currency: 'EUR', value: 'de', displayName: 'se-sv', displayLong: 'German (Germany)' },
     { lang: 'fr_FR', currency: 'EUR', value: 'fr', displayName: 'French', displayLong: 'French (France)' },
   ],
 };

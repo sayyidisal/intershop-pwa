@@ -7,17 +7,17 @@ export function topLevelRouteWrap(children: Routes): Routes {
       children,
     },
     {
-      path: 'se-sv',
+      path: 'en-us',
       data: {
-        lang: 'de_DE',
+        lang: 'en_US',
         channel: 'inSPIRED-inTRONICS-Site',
       },
       children,
     },
     {
-      path: 'en-us',
+      path: 'se-sv',
       data: {
-        lang: 'en_US',
+        lang: 'de_DE',
         channel: 'inSPIRED-inTRONICS_Business-Site',
       },
       children,
