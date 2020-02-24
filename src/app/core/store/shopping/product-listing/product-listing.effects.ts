@@ -67,17 +67,20 @@ export class ProductListingEffects {
     mapToPayload(),
     switchMap(({ id, page }) =>
       this.activatedRoute.queryParamMap.pipe(
-        map(params => ({
-          id,
-          sorting: params.get('sorting') || undefined,
-          page: +params.get('page') || page || undefined,
-          filters: params.get('filters')
+        map(params => {
+          const filters = params.get('filters')
             ? {
                 ...stringToFormParams(params.get('filters')),
                 ...(id.type === 'search' ? { searchTerm: [id.value] } : {}),
               }
-            : undefined,
-        }))
+            : undefined;
+          return {
+            id: { ...id, filters },
+            sorting: params.get('sorting') || undefined,
+            page: +params.get('page') || page || undefined,
+            filters,
+          };
+        })
       )
     ),
     distinctUntilChanged(isEqual),
@@ -96,7 +99,7 @@ export class ProductListingEffects {
     ),
     map(({ id, sorting, page, filters, viewAvailable }) => {
       if (viewAvailable) {
-        return new actions.SetProductListingPages({ id: { sorting, ...id } });
+        return new actions.SetProductListingPages({ id: { sorting, filters, ...id } });
       }
       if (
         filters &&
