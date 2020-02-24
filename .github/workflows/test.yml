@@ -135,16 +135,16 @@ jobs:
 
     strategy:
       fail-fast: true
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         test:
           [
             '*mock*',
-            '*b2b*',
             'account/*b2c*',
             'checkout/*b2c*',
             'shopping/*b2c*',
             'system/*b2c*',
+            '*b2b*',
             # TODO: include remaining in a general way
             # '!(shopping|account|checkout)*/*b2c*'
             # '@(cms|contact)*/*b2c*'
