@@ -5,8 +5,9 @@ import { FeatureToggleGuard } from 'ish-core/feature-toggle.module';
 import { AuthGuard } from 'ish-core/guards/auth.guard';
 import { LoginGuard } from 'ish-core/guards/login.guard';
 import { LogoutGuard } from 'ish-core/guards/logout.guard';
+import { SetLanguageGuard } from 'ish-core/guards/set-language.guard';
 
-import { SetLanguageGuard, topLevelRouteWrap } from './top-level-language.route';
+import { topLevelRouteWrap } from './top-level-language.route';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
