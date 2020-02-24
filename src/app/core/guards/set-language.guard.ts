@@ -1,4 +1,5 @@
-import { Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivate,
@@ -24,6 +25,7 @@ export class SetLanguageGuard implements CanActivate, CanActivateChild {
     private store: Store<{}>,
     private router: Router,
     @Inject(AVAILABLE_LOCALES) private locales: Locale[],
+    @Inject(PLATFORM_ID) private platformId: string,
     private cookies: CookiesService
   ) {}
 
@@ -37,7 +39,7 @@ export class SetLanguageGuard implements CanActivate, CanActivateChild {
     let lang = data.lang;
     let channel = data.channel;
 
-    if (!lang) {
+    if (!lang && isPlatformBrowser(this.platformId)) {
       const cookieContent = this.cookies.get('channel');
       if (cookieContent) {
         const cookie = JSON.parse(cookieContent);
@@ -50,11 +52,13 @@ export class SetLanguageGuard implements CanActivate, CanActivateChild {
     if (routeLocale) {
       this.store.dispatch(new SelectLocale({ lang: routeLocale.lang }));
       this.store.dispatch(new ApplyConfiguration({ channel }));
-      const cookieContent = {
-        lang: routeLocale.lang,
-        channel,
-      };
-      this.cookies.put('channel', JSON.stringify(cookieContent));
+      if (isPlatformBrowser(this.platformId)) {
+        const cookieContent = {
+          lang: routeLocale.lang,
+          channel,
+        };
+        this.cookies.put('channel', JSON.stringify(cookieContent));
+      }
     }
   }
 
