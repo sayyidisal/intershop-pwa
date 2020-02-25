@@ -8,6 +8,8 @@ import {
   VariableDeclarationKind,
 } from 'ts-morph';
 
+import { updateNewExpressionString } from '../morph-helpers/morph-helpers';
+
 export class ActionCreatorsActionsMorpher {
   constructor(public actionsFile: SourceFile, public storeName: string, public project: Project) {}
   actionTypes: { [typeName: string]: string };
@@ -15,13 +17,16 @@ export class ActionCreatorsActionsMorpher {
   migrateActions(updateGlobalReferences: boolean = true) {
     this.readActionTypes();
     this.replaceActions(updateGlobalReferences);
+
     // clean up old code
     this.actionsFile.getEnums()[0].remove();
     this.actionsFile.getTypeAliases()[0].remove();
     this.actionsFile.fixMissingImports();
     this.actionsFile.fixUnusedIdentifiers();
   }
-
+  /**
+   * read action types from actions enum and save in this.actionTypes
+   */
   private readActionTypes() {
     console.log('reading action types...');
     this.actionTypes = this.actionsFile
@@ -37,12 +42,17 @@ export class ActionCreatorsActionsMorpher {
     console.log(`    ${Object.keys(this.actionTypes).length} actions found`);
   }
 
+  /**
+   * replace action class declaration with createAction factory call
+   * @param updateGlobalReferences whether to globally update references for each action
+   */
   private replaceActions(updateGlobalReferences: boolean) {
     console.log('replacing action classes with creator functions...');
     this.actionsFile.getClasses().forEach(actionClass => {
       // retrieve basic action information
       const className = actionClass.getName();
       const typeString = this.actionTypes[className];
+
       // get constructor information
       const hasConstructor = actionClass.getConstructors().length > 0;
       const constructorContents = hasConstructor
@@ -71,8 +81,10 @@ export class ActionCreatorsActionsMorpher {
           },
         ],
       };
+
       // add variable statement to file
       this.actionsFile.addVariableStatement(createActionStructure);
+
       // update references in other files
       if (updateGlobalReferences) {
         this.updateGlobalReferences(actionClass);
@@ -80,56 +92,63 @@ export class ActionCreatorsActionsMorpher {
         actionClass
           .findReferencesAsNodes()
           .map(node => node.getSourceFile())
-          .filter((value, index, array) =>
-            index === array.indexOf(value))
+          .filter((value, index, array) => index === array.indexOf(value))
           .forEach(sf => {
             sf.fixMissingImports();
             sf.fixUnusedIdentifiers();
           });
       }
+
       // remove class from file
       actionClass.remove();
     });
   }
 
+  /**
+   * replaces global references to a given actionClass with createAction calls
+   * @param actionClass the actionClass to update
+   */
   private updateGlobalReferences(actionClass: ClassDeclaration) {
     console.log(`updating references for ${actionClass.getName()}...`);
+
+    // iterate over all actionClass references
     let i = 0;
     actionClass.findReferencesAsNodes().forEach(reference => {
+      // exclude tests and the actions file itself
       if (
-        // exclude tests and the actions file itself
         !reference
           .getSourceFile()
           .getBaseName()
           .includes('spec.ts') &&
         reference.getSourceFile() !== this.actionsFile
       ) {
+        // extract information about the reference
         const newExpression = reference.getFirstAncestor(
           ancestor => ancestor.getKind() === SyntaxKind.NewExpression
         ) as NewExpression;
         const callExpression = reference.getFirstAncestor(
           ancestor => ancestor.getKind() === SyntaxKind.CallExpression
         ) as CallExpression;
-        // update "new"-expressions
+
+        // update NewExpressions or CallExpressions
         if (newExpression) {
           console.log(`    ${newExpression.getSourceFile().getBaseName()}`);
           // swap new class instantiation to actionCreator call
           const hasArgument = newExpression.getArguments().length > 0;
           const argument = hasArgument ? `{payload: ${newExpression.getArguments()[0].getText()}}` : '';
 
-          // update general new statements in function calls
+          // update general new statements in function calls or arrow functions
           if (newExpression.getParent().getKind() === SyntaxKind.CallExpression) {
             const callExpParent = newExpression.getParentIfKindOrThrow(SyntaxKind.CallExpression);
-            const argumentText = this.updateNewExpressionString(actionClass.getName(), argument);
+            const argumentText = updateNewExpressionString(actionClass.getName(), argument);
 
             callExpParent.addArgument(argumentText);
             callExpParent.removeArgument(newExpression);
             i++;
           } else if (newExpression.getParent().getKind() === SyntaxKind.ArrowFunction) {
-            // update new statements in arrow functions
             const arrow = newExpression.getParentIfKindOrThrow(SyntaxKind.ArrowFunction);
 
-            const argumentText = this.updateNewExpressionString(actionClass.getName(), argument);
+            const argumentText = updateNewExpressionString(actionClass.getName(), argument);
             arrow.getFirstChildByKindOrThrow(SyntaxKind.NewExpression).replaceWithText(argumentText);
 
             // ToDo: Multiple Parameters?
@@ -139,28 +158,23 @@ export class ActionCreatorsActionsMorpher {
             arrow.getParentIfKind(SyntaxKind.CallExpression).removeArgument(arrow);
             i++;
           }
-        } else if (callExpression) {
-          // update actions in call expressions
-          if (
-            callExpression
-              .getArguments()
-              .filter(arg => arg.getKind() === SyntaxKind.Identifier)
-              .includes(reference)
-          ) {
-            callExpression.addArgument(actionClass.getName().replace(/^\w/, c => c.toLowerCase()));
-            callExpression.removeArgument(reference);
+        } else if (
+          callExpression &&
+          callExpression
+            .getArguments()
+            .filter(arg => arg.getKind() === SyntaxKind.Identifier)
+            .includes(reference)
+        ) {
+          // update action references in call expressions
+          callExpression.addArgument(actionClass.getName().replace(/^\w/, c => c.toLowerCase()));
+          callExpression.removeArgument(reference);
 
-            i++;
-          }
+          i++;
         }
 
         // ToDo: maybe update other expressions
       }
     });
     i > 0 ? console.log(`    updated ${i} reference${i > 1 ? 's' : ''}.`) : console.log('    no references found.');
-  }
-
-  updateNewExpressionString(actionClassString: string, argumentString: string = '') {
-    return `${actionClassString.replace(/^\w/, c => c.toLowerCase())}(${argumentString})`;
   }
 }

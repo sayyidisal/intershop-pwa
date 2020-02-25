@@ -1,5 +1,7 @@
 import { CallExpression, SourceFile, SyntaxKind } from 'ts-morph';
 
+import { isMap } from '../morph-helpers/morph-helpers';
+
 export class ActionCreatorsEffectMorpher {
   constructor(public storeName: string, public effectsFile: SourceFile) {}
 
@@ -12,10 +14,12 @@ export class ActionCreatorsEffectMorpher {
         // retrieve information from effect
         const name = effect.getFirstChildByKindOrThrow(SyntaxKind.Identifier).getText();
         let logic = effect.getFirstChildByKindOrThrow(SyntaxKind.CallExpression);
+
         // update effect logic
         logic = this.updateOfType(logic);
         logic = this.updateMap(logic);
         logic = this.updateMapErrorToAction(logic);
+
         // add new updated property declaration
         this.effectsFile.getClasses()[0].addProperty({
           name,
@@ -27,6 +31,10 @@ export class ActionCreatorsEffectMorpher {
     this.effectsFile.fixUnusedIdentifiers();
   }
 
+  /**
+   * updates ofType calls in given pipe
+   * @param pipe pipe CallExpression
+   */
   private updateOfType(pipe: CallExpression): CallExpression {
     pipe
       // get piped functions
@@ -45,14 +53,22 @@ export class ActionCreatorsEffectMorpher {
     return pipe;
   }
 
+  /**
+   * PLACEHOLDER: updates different map calls in given pipe
+   * @param pipe pipe CallExpression
+   */
   private updateMap(pipe: CallExpression): CallExpression {
     const lastCall = pipe.getLastChildByKind(SyntaxKind.CallExpression);
-    if (this.isMap(lastCall.getFirstChildByKind(SyntaxKind.Identifier).getText())) {
+    if (isMap(lastCall.getFirstChildByKind(SyntaxKind.Identifier).getText())) {
       return pipe;
     }
     return pipe;
   }
 
+  /**
+   * updated mapErrorToAction calls to use new version "mapErroToActionV8"
+   * @param pipe pipe CallExpression
+   */
   private updateMapErrorToAction(pipe: CallExpression): CallExpression {
     pipe.getDescendantsOfKind(SyntaxKind.CallExpression).forEach(descendant => {
       if (descendant.getExpression().getText() === 'mapErrorToAction') {
@@ -60,9 +76,5 @@ export class ActionCreatorsEffectMorpher {
       }
     });
     return pipe;
-  }
-
-  private isMap(identifier: string) {
-    return identifier === 'map' || 'concatMap' || 'mergeMap' || 'switchMap' || 'mapTo';
   }
 }

@@ -1,19 +1,31 @@
 import { CaseClause, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
-import { MorphOperators } from '../morph-operators/morph-operators';
+import { createActionTypes } from '../morph-helpers/morph-helpers';
 
 export class ActionCreatorsReducerMorpher {
   constructor(public storeName: string, public reducerFile: SourceFile) {}
 
   migrateReducer() {
     this.addImports();
-    this.updateReducer();
+    this.declareNewReducer();
     this.updateFeatureReducer();
     this.reducerFile.fixMissingImports();
     this.reducerFile.fixUnusedIdentifiers();
   }
+  /**
+   * add required imports to prevent problems with automatic adding
+   */
+  private addImports() {
+    this.reducerFile.addImportDeclaration({
+      moduleSpecifier: '@ngrx/store',
+      namedImports: ['on'],
+    });
+  }
 
-  private updateReducer() {
+  /**
+   * declare new reducer function created with new createReducer factory
+   */
+  private declareNewReducer() {
     console.log('replacing reducers...');
     // retrieve reducer logic from old reducer
     const switchStatements: {
@@ -23,23 +35,27 @@ export class ActionCreatorsReducerMorpher {
       previousIdentifiers: string[];
     }[] = [];
     let previousIdentifiers: string[] = [];
+
+    // iterate over reducer switch cases and store info
     this.reducerFile
       .getFunction(`${this.storeName}Reducer`)
       .getFirstDescendantByKind(SyntaxKind.CaseBlock)
       .getClauses()
       .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
       .forEach((clause: CaseClause) => {
-        // check whether clause is an empty clause
+        // store empty clauses for later use and continue
         if (clause.getStatements().length === 0) {
           previousIdentifiers.push(clause.getExpression().getText());
           return;
         }
-        // is it a static return or is the payload used?
+
+        // does the clause have a static return or is the payload used?
         const hasLogic =
           clause
             .getFirstChildByKindOrThrow(SyntaxKind.Block)
             .getStatements()[0]
             .getKind() !== SyntaxKind.ReturnStatement;
+
         // push information about switch statement to array
         switchStatements.push({
           identifier: clause.getExpression().getText(),
@@ -65,34 +81,23 @@ export class ActionCreatorsReducerMorpher {
         },
       ],
     });
-    const createReducerFunction = reducer.getFirstDescendantByKindOrThrow(SyntaxKind.CallExpression);
+
     // add first reducer argument
+    const createReducerFunction = reducer.getFirstDescendantByKindOrThrow(SyntaxKind.CallExpression);
     createReducerFunction.addArgument('initialState');
+
     // for each switch case, add a new on()-function
     switchStatements.forEach(clause => {
       // name of the actionCreator function
-      const actionTypes = this.createActionTypes(clause.identifier, clause.previousIdentifiers);
+      const actionTypes = createActionTypes(clause.identifier, clause.previousIdentifiers);
       const arrowFunction = clause.hasLogic ? `(state, action) => ${clause.block}` : `state => ${clause.block}`;
       createReducerFunction.addArgument(`on(${actionTypes}, ${arrowFunction})`);
     });
   }
 
-  private createActionTypes(identifier: string, previousIdentifiers: string[]): string {
-    if (previousIdentifiers.length >= 9) {
-      throw new Error('Error: too many empty clauses. on() takes at most 10 arguments.');
-    }
-    const identifier_ = `${MorphOperators.standardizeIdentifier(identifier)}`;
-    const previousIdentifiers_ = previousIdentifiers.map(i => `${MorphOperators.standardizeIdentifier(i)}`).join(', ');
-    return previousIdentifiers.length === 0 ? identifier_ : `${identifier_}, ${previousIdentifiers_}`;
-  }
-
-  private addImports() {
-    this.reducerFile.addImportDeclaration({
-      moduleSpecifier: '@ngrx/store',
-      namedImports: ['on'],
-    });
-  }
-
+  /**
+   * update reducer function to use the newly constructed version using createReducer
+   */
   private updateFeatureReducer() {
     this.reducerFile
       .getFunction(`${this.storeName}Reducer`)
