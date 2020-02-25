@@ -3,15 +3,7 @@ import { CallExpression, SourceFile, SyntaxKind } from 'ts-morph';
 export class ActionCreatorsEffectMorpher {
   constructor(public storeName: string, public effectsFile: SourceFile) {}
 
-  private addImportStatements() {
-    this.effectsFile.addImportDeclaration({
-      moduleSpecifier: '@ngrx/store',
-      namedImports: ['createEffect'],
-    });
-  }
-
   migrateEffects() {
-    this.addImportStatements();
     console.log('replacing effects...');
     this.effectsFile
       .getClasses()[0]
@@ -23,8 +15,9 @@ export class ActionCreatorsEffectMorpher {
         // update effect logic
         logic = this.updateOfType(logic);
         logic = this.updateMap(logic);
+        logic = this.updateMapErrorToAction(logic);
         // add new updated property declaration
-        const newEffect = this.effectsFile.getClasses()[0].addProperty({
+        this.effectsFile.getClasses()[0].addProperty({
           name,
           initializer: `createEffect(() => ${logic.getText()})`,
         });
@@ -57,6 +50,15 @@ export class ActionCreatorsEffectMorpher {
     if (this.isMap(lastCall.getFirstChildByKind(SyntaxKind.Identifier).getText())) {
       return pipe;
     }
+    return pipe;
+  }
+
+  private updateMapErrorToAction(pipe: CallExpression): CallExpression {
+    pipe.getDescendantsOfKind(SyntaxKind.CallExpression).forEach(descendant => {
+      if (descendant.getExpression().getText() === 'mapErrorToAction') {
+        descendant.getExpression().replaceWithText('mapErrorToActionV8');
+      }
+    });
     return pipe;
   }
 

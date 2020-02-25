@@ -2,13 +2,14 @@ import {
   CallExpression,
   ClassDeclaration,
   NewExpression,
+  Project,
   SourceFile,
   SyntaxKind,
   VariableDeclarationKind,
 } from 'ts-morph';
 
 export class ActionCreatorsActionsMorpher {
-  constructor(public actionsFile: SourceFile, public storeName: string) {}
+  constructor(public actionsFile: SourceFile, public storeName: string, public project: Project) {}
   actionTypes: { [typeName: string]: string };
 
   migrateActions(updateGlobalReferences: boolean = true) {
@@ -75,6 +76,16 @@ export class ActionCreatorsActionsMorpher {
       // update references in other files
       if (updateGlobalReferences) {
         this.updateGlobalReferences(actionClass);
+        // fix updated files
+        actionClass
+          .findReferencesAsNodes()
+          .map(node => node.getSourceFile())
+          .filter((value, index, array) =>
+            index === array.indexOf(value))
+          .forEach(sf => {
+            sf.fixMissingImports();
+            sf.fixUnusedIdentifiers();
+          });
       }
       // remove class from file
       actionClass.remove();

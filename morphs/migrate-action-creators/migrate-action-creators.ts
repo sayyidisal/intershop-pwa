@@ -15,13 +15,18 @@ const storeName = 'contact';
 const project = new Project({
   tsConfigFilePath: 'E:/Projects/pwa-github/tsconfig.json',
 });
+
 /*
 Please make sure there are no star imports used in your store!
 */
 
 console.log(`migrating '${storeName}' store`);
 // instantiate morphers
-const actionMorph = new ActionCreatorsActionsMorpher(project.getSourceFile(`${storeName}.actions.ts`), storeName);
+const actionMorph = new ActionCreatorsActionsMorpher(
+  project.getSourceFile(`${storeName}.actions.ts`),
+  storeName,
+  project
+);
 const reducerMorph = new ActionCreatorsReducerMorpher(storeName, project.getSourceFile(`${storeName}.reducer.ts`));
 const effectsMorph = new ActionCreatorsEffectMorpher(storeName, project.getSourceFile(`${storeName}.effects.ts`));
 
