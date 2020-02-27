@@ -14,34 +14,33 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var Lint = require("tslint");
+var typescript_1 = require("typescript");
+var ruleHelpers_1 = require("./ruleHelpers");
 var Rule = /** @class */ (function (_super) {
     __extends(Rule, _super);
     function Rule() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.filePattern = '^.*.(effects|reducer|actions).ts$';
+        return _this;
     }
     Rule.prototype.apply = function (sourceFile) {
-        if (sourceFile.fileName.includes('.effects.ts' || '.actions.ts' || '.reducer.ts' || '.selectors.ts')) {
-            return this.applyWithWalker(new NoStarImportsInStoreRule(sourceFile, this.getOptions()));
-        }
-        else {
-            return [];
+        var _this = this;
+        return this.applyWithFunction(sourceFile, function (ctx) {
+            sourceFile.statements
+                .filter(function (stm) { return stm.kind === typescript_1.SyntaxKind.ImportDeclaration; })
+                .forEach(function (node) {
+                _this.visitImportDeclaration(ctx, node);
+            });
+        });
+    };
+    Rule.prototype.visitImportDeclaration = function (ctx, importStatement) {
+        var fromStringToken = ruleHelpers_1.RuleHelpers.getNextChildTokenOfKind(importStatement, typescript_1.SyntaxKind.StringLiteral);
+        var fromStringText = fromStringToken.getText().substring(1, fromStringToken.getText().length - 1);
+        if (new RegExp(this.filePattern).test(importStatement.getSourceFile().fileName) &&
+            importStatement.getChildAt(1).getChildAt(0).kind === typescript_1.SyntaxKind.NamespaceImport) {
+            ctx.addFailureAtNode(importStatement, "Star imports in ngrx store files are banned.");
         }
     };
-    Rule.FAILURE_STRING = 'star import in ngrx store files is forbidden';
     return Rule;
 }(Lint.Rules.AbstractRule));
 exports.Rule = Rule;
-// The walker takes care of all the work.
-var NoStarImportsInStoreRule = /** @class */ (function (_super) {
-    __extends(NoStarImportsInStoreRule, _super);
-    function NoStarImportsInStoreRule() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    NoStarImportsInStoreRule.prototype.visitNamespaceImport = function (node) {
-        // create a failure at the current position
-        this.addFailure(this.createFailure(node.getStart(), node.getWidth(), Rule.FAILURE_STRING));
-        // call the base version of this visitor to actually parse this node
-        _super.prototype.visitNamespaceImport.call(this, node);
-    };
-    return NoStarImportsInStoreRule;
-}(Lint.RuleWalker));

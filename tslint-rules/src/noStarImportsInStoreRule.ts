@@ -1,25 +1,29 @@
 import * as Lint from 'tslint';
-import * as ts from 'typescript';
+import { ImportDeclaration, SourceFile, SyntaxKind } from 'typescript';
+
+import { RuleHelpers } from './ruleHelpers';
 
 export class Rule extends Lint.Rules.AbstractRule {
-  static FAILURE_STRING = 'star import in ngrx store files is forbidden';
-
-  apply(sourceFile: ts.SourceFile): Lint.RuleFailure[] {
-    if (sourceFile.fileName.includes('.effects.ts' || '.actions.ts' || '.reducer.ts' || '.selectors.ts')) {
-      return this.applyWithWalker(new NoStarImportsInStoreRule(sourceFile, this.getOptions()));
-    } else {
-      return [];
-    }
+  filePattern = '^.*.(effects|reducer|actions).ts$';
+  apply(sourceFile: SourceFile): Lint.RuleFailure[] {
+    return this.applyWithFunction(sourceFile, ctx => {
+      sourceFile.statements
+        .filter(stm => stm.kind === SyntaxKind.ImportDeclaration)
+        .forEach(node => {
+          this.visitImportDeclaration(ctx, node as ImportDeclaration);
+        });
+    });
   }
-}
 
-// The walker takes care of all the work.
-class NoStarImportsInStoreRule extends Lint.RuleWalker {
-  visitNamespaceImport(node: ts.NamespaceImport) {
-    // create a failure at the current position
-    this.addFailure(this.createFailure(node.getStart(), node.getWidth(), Rule.FAILURE_STRING));
+  private visitImportDeclaration(ctx: Lint.WalkContext<void>, importStatement: ImportDeclaration) {
+    const fromStringToken = RuleHelpers.getNextChildTokenOfKind(importStatement, SyntaxKind.StringLiteral);
+    const fromStringText = fromStringToken.getText().substring(1, fromStringToken.getText().length - 1);
 
-    // call the base version of this visitor to actually parse this node
-    super.visitNamespaceImport(node);
+    if (
+      new RegExp(this.filePattern).test(importStatement.getSourceFile().fileName) &&
+      importStatement.getChildAt(1).getChildAt(0).kind === SyntaxKind.NamespaceImport
+    ) {
+      ctx.addFailureAtNode(importStatement, `Star imports in ngrx store files are banned.`);
+    }
   }
 }
