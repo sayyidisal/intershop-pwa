@@ -217,6 +217,7 @@
     "ish-ordered-imports": true,
     "ish-useful-imports": true,
     "no-duplicate-imports": true,
+    "no-star-imports-in-store": true,
     "ban": [
       true,
       {
