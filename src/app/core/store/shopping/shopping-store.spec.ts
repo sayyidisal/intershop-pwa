@@ -501,25 +501,25 @@ describe('Shopping Store', () => {
           categoryId: "A"
         [Shopping] Load Category:
           categoryId: "A.123"
+        [Shopping] Load Category Success:
+          categories: tree(A,A.123)
+        [Shopping] Load Category Success:
+          categories: tree(A.123,A.123.456)
+        [ProductListing] Load More Products:
+          id: {"type":"category","value":"A.123.456"}
+        [ProductListing] Load More Products:
+          id: {"type":"category","value":"A.123.456"}
         [ProductListing Internal] Load More Products For Params:
           id: {"type":"category","value":"A.123.456"}
           filters: undefined
           sorting: undefined
           page: undefined
-        [Shopping] Load Category Success:
-          categories: tree(A,A.123)
-        [Shopping] Load Category Success:
-          categories: tree(A.123,A.123.456)
         [Shopping] Load Products for Category:
           categoryId: "A.123.456"
           page: undefined
           sorting: undefined
         [Shopping] Load Filter For Category:
           uniqueId: "A.123.456"
-        [ProductListing] Load More Products:
-          id: {"type":"category","value":"A.123.456"}
-        [ProductListing] Load More Products:
-          id: {"type":"category","value":"A.123.456"}
         [Shopping] Load Product Success:
           product: {"sku":"P1"}
         [Shopping] Load Product Success:
