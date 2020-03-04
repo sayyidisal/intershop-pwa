@@ -349,8 +349,6 @@ describe('Shopping Store', () => {
             sortKeys: []
           [Shopping] Load Filter Success:
             filterNavigation: {}
-          [ProductListing] Set Product Listing Pages:
-            id: {"type":"search","value":"something"}
         `);
       }));
 
@@ -531,8 +529,6 @@ describe('Shopping Store', () => {
           sortKeys: []
         [Shopping] Load Filter Success:
           filterNavigation: {}
-        [ProductListing] Set Product Listing Pages:
-          id: {"type":"category","value":"A.123.456"}
       `);
     }));
 
@@ -635,8 +631,6 @@ describe('Shopping Store', () => {
             sortKeys: []
           [Shopping] Load Filter Success:
             filterNavigation: {}
-          [ProductListing] Set Product Listing Pages:
-            id: {"type":"search","value":"something"}
         `);
       }));
 
@@ -814,8 +808,6 @@ describe('Shopping Store', () => {
             sortKeys: []
           [Shopping] Load Filter Success:
             filterNavigation: {}
-          [ProductListing] Set Product Listing Pages:
-            id: {"type":"category","value":"A.123.456"}
         `);
       }));
 
@@ -1104,8 +1096,6 @@ describe('Shopping Store', () => {
           sortKeys: []
         [Shopping] Load Filter Success:
           filterNavigation: {}
-        [ProductListing] Set Product Listing Pages:
-          id: {"type":"search","value":"something"}
       `);
     }));
   });

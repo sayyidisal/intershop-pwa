@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
 import { isEqual } from 'lodash-es';
-import { debounceTime, distinctUntilChanged, filter, map, mapTo, mergeMap, switchMap, take } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, map, mapTo, mergeMap, switchMap, take, tap } from 'rxjs/operators';
 
 import {
   DEFAULT_PRODUCT_LISTING_VIEW_TYPE,
@@ -85,6 +85,7 @@ export class ProductListingEffects {
       )
     ),
     distinctUntilChanged(isEqual),
+    tap(x => console.log('determineParams', x)),
     map(({ id, filters, sorting, page }) => new actions.LoadMoreProductsForParams({ id, filters, sorting, page }))
   );
 
@@ -98,7 +99,8 @@ export class ProductListingEffects {
         map(view => ({ id, sorting, page, filters, viewAvailable: !view.empty() && view.productsOfPage(page).length }))
       )
     ),
-    distinctUntilChanged(isEqual),
+    distinctUntilChanged((a, b) => isEqual({ ...a, viewAvailable: undefined }, { ...b, viewAvailable: undefined })),
+    tap(x => console.log('loadMoreProducts$', x)),
     map(({ id, sorting, page, filters, viewAvailable }) => {
       if (viewAvailable) {
         return new actions.SetProductListingPages({ id: { sorting, filters, ...id } });
