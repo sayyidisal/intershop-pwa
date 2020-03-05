@@ -54,7 +54,7 @@ export class ApplyFilterFail implements Action {
 
 export class LoadProductsForFilter implements Action {
   readonly type = FilterActionTypes.LoadProductsForFilter;
-  constructor(public payload: { id: ProductListingID; searchParameter: URLFormParams }) {}
+  constructor(public payload: { id: ProductListingID; searchParameter: URLFormParams; page?: number }) {}
 }
 
 export class LoadProductsForFilterFail implements Action {

@@ -42,7 +42,7 @@ describe('Filter Effects', () => {
       }
     });
 
-    when(filterServiceMock.getFilteredProducts(anything())).thenCall(a => {
+    when(filterServiceMock.getFilteredProducts(anything(), anything())).thenCall(a => {
       if (a.name === 'invalid') {
         return throwError({ message: 'invalid' });
       } else {
