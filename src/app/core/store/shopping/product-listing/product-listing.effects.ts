@@ -100,14 +100,14 @@ export class ProductListingEffects {
     mapToPayload(),
     switchMap(({ id, sorting, page, filters }) =>
       this.store.pipe(
-        select(getProductListingView, { ...id, sorting, filters }),
+        select(getProductListingView, { ...id, sorting, page, filters }),
         map(view => ({ id, sorting, page, filters, viewAvailable: !view.empty() && view.productsOfPage(page).length }))
       )
     ),
     distinctUntilChanged((a, b) => isEqual({ ...a, viewAvailable: undefined }, { ...b, viewAvailable: undefined })),
     map(({ id, sorting, page, filters, viewAvailable }) => {
       if (viewAvailable) {
-        return new actions.SetProductListingPages({ id: { sorting, filters, ...id } });
+        return new actions.SetProductListingPages({ id: { page, sorting, filters, ...id } });
       }
       if (
         filters &&
@@ -116,7 +116,7 @@ export class ProductListingEffects {
         // TODO: work-around for client side computation of master variations
         ['search', 'category'].includes(id.type)
       ) {
-        return new LoadProductsForFilter({ id: { ...id }, searchParameter: filters, page });
+        return new LoadProductsForFilter({ id: { ...id }, searchParameter: filters, page, sorting });
       } else {
         switch (id.type) {
           case 'category':
