@@ -12,11 +12,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var Lint = require("tslint");
 var typescript_1 = require("typescript");
 var ruleHelpers_1 = require("./ruleHelpers");
-var Rule = /** @class */ (function (_super) {
+var Rule = (function (_super) {
     __extends(Rule, _super);
     function Rule() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -34,11 +34,28 @@ var Rule = /** @class */ (function (_super) {
         });
     };
     Rule.prototype.visitImportDeclaration = function (ctx, importStatement) {
-        var fromStringToken = ruleHelpers_1.RuleHelpers.getNextChildTokenOfKind(importStatement, typescript_1.SyntaxKind.StringLiteral);
-        var fromStringText = fromStringToken.getText().substring(1, fromStringToken.getText().length - 1);
         if (new RegExp(this.filePattern).test(importStatement.getSourceFile().fileName) &&
             importStatement.getChildAt(1).getChildAt(0).kind === typescript_1.SyntaxKind.NamespaceImport) {
-            ctx.addFailureAtNode(importStatement, "Star imports in ngrx store files are banned.");
+            var importString_1 = importStatement
+                .getChildAt(1)
+                .getChildAt(0)
+                .getChildAt(2)
+                .getText();
+            var importNodes = ruleHelpers_1.RuleHelpers.getAllStarImportNodes(importStatement.getSourceFile()).filter(function (node) {
+                return ruleHelpers_1.RuleHelpers.hasChildrenNodesWithText(node, importString_1);
+            });
+            importNodes.forEach(function (node) {
+                var fix = new Lint.Replacement(node.getStart(), node.getWidth(), node.getText().replace(importString_1 + ".", ''));
+                ctx.addFailureAtNode(node, 'star imports are banned', fix);
+            });
+            var newImportStrings = importNodes.map(function (node) {
+                return node
+                    .getText()
+                    .replace(importString_1 + ".", '')
+                    .split('.')[0];
+            });
+            var importFix = new Lint.Replacement(importStatement.getStart(), importStatement.getWidth(), "import {" + newImportStrings.join(',') + "} from " + importStatement.getChildAt(3).getText());
+            ctx.addFailureAtNode(importStatement, "Star imports in ngrx store files are banned.", importFix);
         }
     };
     return Rule;
