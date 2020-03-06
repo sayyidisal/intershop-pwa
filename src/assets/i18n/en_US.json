@@ -2679,5 +2679,6 @@
   "quote.already_in_basket.error": "The quote is already in the cart.",
   "quote.not_found.error": "The quote could not be found.",
   "basket.add_quote.error": "The quote could not be added to the cart.",
-  "quoterequest.not_editable.error": "You have already submitted the quote request. Please <a href=\"javascript:location.reload()\">reload</a> this page to view the changes."
+  "quoterequest.not_editable.error": "You have already submitted the quote request. Please <a href=\"javascript:location.reload()\">reload</a> this page to view the changes.",
+  "search.noresult.filtered_products.message": "We are sorry, we could not find any products that match your filter choice."
 }
