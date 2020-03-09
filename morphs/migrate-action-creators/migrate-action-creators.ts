@@ -4,43 +4,53 @@ import { ActionCreatorsActionsMorpher } from './migrate-action-creators.actions'
 import { ActionCreatorsEffectMorpher } from './migrate-action-creators.effects';
 import { ActionCreatorsReducerMorpher } from './migrate-action-creators.reducers';
 
-const control = {
-  actions: true,
-  reducer: true,
-  effects: true,
+const config = {
+  control: {
+    actions: true,
+    reducer: true,
+    effects: true,
+  },
+  save: true,
+  saveIndividual: false,
 };
-const save = false;
-const saveIndividual = false;
 
-const storeName = 'regions';
+const storeName = 'contact';
 const project = new Project({
   tsConfigFilePath: 'D:/Projects/pwa-github/tsconfig.json',
 });
 
 /*
-Please make sure there are no star imports used in your store!
+  Please make sure there are no star imports used in your store!
 */
+export class ActionCreatorsMorpher {
+  actionsMorph: ActionCreatorsActionsMorpher;
+  reducerMorph: ActionCreatorsReducerMorpher;
+  effectsMorph: ActionCreatorsEffectMorpher;
 
-console.log(`migrating '${storeName}' store`);
-// instantiate morphers
-const actionMorph = new ActionCreatorsActionsMorpher(
-  project.getSourceFile(`${storeName}.actions.ts`),
-  storeName,
-  project
-);
-const reducerMorph = new ActionCreatorsReducerMorpher(storeName, project.getSourceFile(`${storeName}.reducer.ts`));
-const effectsMorph = new ActionCreatorsEffectMorpher(storeName, project.getSourceFile(`${storeName}.effects.ts`));
+  constructor(public storeName: string, public project: Project, public config) {
+    this.actionsMorph = new ActionCreatorsActionsMorpher(project.getSourceFile(`${storeName}.actions.ts`), this);
+    this.reducerMorph = new ActionCreatorsReducerMorpher(project.getSourceFile(`${storeName}.reducer.ts`), this);
+    this.effectsMorph = new ActionCreatorsEffectMorpher(project.getSourceFile(`${storeName}.effects.ts`), this);
+  }
 
-// migrate actions
-control.actions ? actionMorph.migrateActions() : null;
-saveIndividual ? project.save() : null;
+  migrate() {
+    console.log(`migrating '${storeName}' store`);
 
-// migrate reducer
-control.reducer ? reducerMorph.migrateReducer() : null;
-saveIndividual ? project.save() : null;
+    // migrate actions
+    this.config.control.actions ? this.actionsMorph.migrateActions() : null;
+    this.config.saveIndividual ? this.project.save() : null;
 
-// migrate effects
-control.effects ? effectsMorph.migrateEffects() : null;
-saveIndividual ? project.save() : null;
+    // migrate reducer
+    this.config.control.reducer ? this.reducerMorph.migrateReducer() : null;
+    this.config.saveIndividual ? this.project.save() : null;
 
-save ? project.save() : null;
+    // migrate effects
+    this.config.control.effects ? this.effectsMorph.migrateEffects() : null;
+    this.config.saveIndividual ? this.project.save() : null;
+
+    this.config.save ? project.save() : null;
+  }
+}
+
+const morpher = new ActionCreatorsMorpher(storeName, project, config);
+morpher.migrate();

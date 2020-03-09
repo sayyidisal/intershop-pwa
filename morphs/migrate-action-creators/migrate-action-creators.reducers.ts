@@ -2,8 +2,10 @@ import { CaseClause, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-
 
 import { checkForNamespaceImports, createActionTypes } from '../morph-helpers/morph-helpers';
 
+import { ActionCreatorsMorpher } from './migrate-action-creators';
+
 export class ActionCreatorsReducerMorpher {
-  constructor(public storeName: string, public reducerFile: SourceFile) {}
+  constructor(public reducerFile: SourceFile, public parent: ActionCreatorsMorpher) {}
 
   migrateReducer() {
     console.log('replacing reducers...');
@@ -39,7 +41,7 @@ export class ActionCreatorsReducerMorpher {
 
     // iterate over reducer switch cases and store info
     this.reducerFile
-      .getFunction(`${this.storeName}Reducer`)
+      .getFunction(`${this.parent.storeName}Reducer`)
       .getFirstDescendantByKind(SyntaxKind.CaseBlock)
       .getClauses()
       .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
@@ -101,15 +103,15 @@ export class ActionCreatorsReducerMorpher {
    */
   private updateFeatureReducer() {
     this.reducerFile
-      .getFunction(`${this.storeName}Reducer`)
+      .getFunction(`${this.parent.storeName}Reducer`)
       .getParameter('action')
       .remove();
-    this.reducerFile.getFunction(`${this.storeName}Reducer`).addParameter({ name: 'action', type: 'Action' });
+    this.reducerFile.getFunction(`${this.parent.storeName}Reducer`).addParameter({ name: 'action', type: 'Action' });
     this.reducerFile
-      .getFunction(`${this.storeName}Reducer`)
+      .getFunction(`${this.parent.storeName}Reducer`)
       .getFirstChildByKindOrThrow(SyntaxKind.Block)
       .getStatements()
       .forEach(statement => statement.remove());
-    this.reducerFile.getFunction(`${this.storeName}Reducer`).setBodyText('return reducer(state,action)');
+    this.reducerFile.getFunction(`${this.parent.storeName}Reducer`).setBodyText('return reducer(state,action)');
   }
 }

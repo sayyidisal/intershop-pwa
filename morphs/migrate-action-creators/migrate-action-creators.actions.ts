@@ -2,7 +2,6 @@ import {
   CallExpression,
   ClassDeclaration,
   NewExpression,
-  Project,
   SourceFile,
   SyntaxKind,
   VariableDeclarationKind,
@@ -10,8 +9,10 @@ import {
 
 import { checkForNamespaceImports, updateNewExpressionString } from '../morph-helpers/morph-helpers';
 
+import { ActionCreatorsMorpher } from './migrate-action-creators';
+
 export class ActionCreatorsActionsMorpher {
-  constructor(public actionsFile: SourceFile, public storeName: string, public project: Project) {}
+  constructor(public actionsFile: SourceFile, public parent: ActionCreatorsMorpher) {}
   actionTypes: { [typeName: string]: string };
 
   migrateActions(updateGlobalReferences: boolean = true) {

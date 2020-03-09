@@ -2,8 +2,10 @@ import { CallExpression, SourceFile, SyntaxKind } from 'ts-morph';
 
 import { checkForNamespaceImports, isMap } from '../morph-helpers/morph-helpers';
 
+import { ActionCreatorsMorpher } from './migrate-action-creators';
+
 export class ActionCreatorsEffectMorpher {
-  constructor(public storeName: string, public effectsFile: SourceFile) {}
+  constructor(public effectsFile: SourceFile, public parent: ActionCreatorsMorpher) {}
 
   migrateEffects() {
     console.log('replacing effects...');
