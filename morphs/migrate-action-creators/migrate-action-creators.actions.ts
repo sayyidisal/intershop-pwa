@@ -16,6 +16,10 @@ export class ActionCreatorsActionsMorpher {
   actionTypes: { [typeName: string]: string };
 
   migrateActions(updateGlobalReferences: boolean = true) {
+    if (!this.actionsFile) {
+      console.log('no actions file found');
+      return;
+    }
     console.log('replacing actions...');
     checkForNamespaceImports(this.actionsFile);
     this.readActionTypes();

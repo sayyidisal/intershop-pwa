@@ -8,6 +8,10 @@ export class ActionCreatorsEffectMorpher {
   constructor(public effectsFile: SourceFile, public parent: ActionCreatorsMorpher) {}
 
   migrateEffects() {
+    if (!this.effectsFile) {
+      console.log('no effects file found');
+      return;
+    }
     console.log('replacing effects...');
     checkForNamespaceImports(this.effectsFile);
     this.effectsFile

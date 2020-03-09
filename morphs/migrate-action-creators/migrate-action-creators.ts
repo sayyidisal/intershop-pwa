@@ -14,7 +14,7 @@ const config = {
   saveIndividual: false,
 };
 
-const storeName = 'addresses';
+const storeName = 'orders';
 const project = new Project({
   tsConfigFilePath: 'D:/Projects/pwa-github/tsconfig.json',
 });

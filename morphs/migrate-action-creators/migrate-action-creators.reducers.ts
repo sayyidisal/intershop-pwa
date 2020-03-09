@@ -15,6 +15,10 @@ export class ActionCreatorsReducerMorpher {
   constructor(public reducerFile: SourceFile, public parent: ActionCreatorsMorpher) {}
 
   migrateReducer() {
+    if (!this.reducerFile) {
+      console.log('no reducer file found');
+      return;
+    }
     console.log('replacing reducers...');
     checkForNamespaceImports(this.reducerFile);
     this.addImports();
