@@ -141,7 +141,7 @@ export class ActionCreatorsActionsMorpher {
           const hasArgument = newExpression.getArguments().length > 0;
           const argument = hasArgument ? `{payload: ${newExpression.getArguments()[0].getText()}}` : '';
 
-          // update general new statements in function calls or arrow functions
+          // update general new statements in function calls or arrow functions or arrays
           if (newExpression.getParent().getKind() === SyntaxKind.CallExpression) {
             const callExpParent = newExpression.getParentIfKindOrThrow(SyntaxKind.CallExpression);
             const argumentText = updateNewExpressionString(actionClass.getName(), argument);
@@ -161,6 +161,11 @@ export class ActionCreatorsActionsMorpher {
               .addArgument(`${arrow.getParameters()[0].getText()} => ${argumentText}`);
             arrow.getParentIfKind(SyntaxKind.CallExpression).removeArgument(arrow);
             i++;
+          } else if (newExpression.getParent().getKind() === SyntaxKind.ArrayLiteralExpression) {
+            const array = newExpression.getParentIfKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+            updateNewExpressionString(actionClass.getName(), argument);
+            array.addElement(updateNewExpressionString(actionClass.getName(), argument));
+            array.removeElement(newExpression);
           }
         } else if (
           callExpression &&
