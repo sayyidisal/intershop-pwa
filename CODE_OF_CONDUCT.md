@@ -1,3 +1,9 @@
+<!--
+kb_sync_latest_only
+kb_pwa
+kb_everyone
+-->
+
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge

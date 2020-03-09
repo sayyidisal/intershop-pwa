@@ -1,3 +1,8 @@
+<!--
+kb_sync_by_release
+kb_pwa
+kb_everyone
+-->
 # Search Engine Optimization (SEO)
 
 This section documents our approach for Search Engine Optimization for the Intershop Progressive Web App.

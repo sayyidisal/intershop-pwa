@@ -1,4 +1,9 @@
-# Intershop Progressive Web App
+<!--
+kb_sync_latest_only
+kb_pwa
+kb_everyone
+-->
+# Getting Started
 
 Welcome to the Intershop PWA project!
 

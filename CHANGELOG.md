@@ -1,3 +1,8 @@
+<!--
+kb_sync_latest_only
+kb_pwa
+kb_everyone
+-->
 # [0.17.0](https://github.com/intershop/intershop-pwa/releases/tag/0.17.0) (2020-01-24)
 
 **required Intershop Commerce Management version: 7.10.15.2**

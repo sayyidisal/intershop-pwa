@@ -1,3 +1,8 @@
+<!--
+kb_sync_latest_only
+kb_pwa
+kb_everyone
+-->
 # Migrations
 
 ## 0.16 to 0.17

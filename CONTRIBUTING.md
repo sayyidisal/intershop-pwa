@@ -1,3 +1,8 @@
+<!--
+kb_sync_latest_only
+kb_pwa
+kb_everyone
+-->
 # Contributing to the Intershop Progressive Web App
 
 Thank you for your interest in the Intershop PWA project.
