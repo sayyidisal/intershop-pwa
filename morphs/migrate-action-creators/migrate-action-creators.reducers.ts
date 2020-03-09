@@ -5,6 +5,13 @@ import { checkForNamespaceImports, createActionTypes } from '../morph-helpers/mo
 import { ActionCreatorsMorpher } from './migrate-action-creators';
 
 export class ActionCreatorsReducerMorpher {
+  switchStatements: {
+    identifier: string;
+    hasLogic: boolean;
+    block: string;
+    previousIdentifiers: string[];
+  }[];
+  dependencies: string[] = [];
   constructor(public reducerFile: SourceFile, public parent: ActionCreatorsMorpher) {}
 
   migrateReducer() {
@@ -15,6 +22,11 @@ export class ActionCreatorsReducerMorpher {
     this.updateFeatureReducer();
     this.reducerFile.fixMissingImports();
     this.reducerFile.fixUnusedIdentifiers();
+    if (this.dependencies.length > 0) {
+      console.log(`  store depends on foreign actions: `);
+      this.dependencies.forEach(dep => console.log(`    ${dep}`));
+      console.log('  please migrate the corresponding stores');
+    }
   }
   /**
    * add required imports to prevent problems with automatic adding
@@ -30,44 +42,7 @@ export class ActionCreatorsReducerMorpher {
    * declare new reducer function created with new createReducer factory
    */
   private declareNewReducer() {
-    // retrieve reducer logic from old reducer
-    const switchStatements: {
-      identifier: string;
-      hasLogic: boolean;
-      block: string;
-      previousIdentifiers: string[];
-    }[] = [];
-    let previousIdentifiers: string[] = [];
-
-    // iterate over reducer switch cases and store info
-    this.reducerFile
-      .getFunction(`${this.parent.storeName}Reducer`)
-      .getFirstDescendantByKind(SyntaxKind.CaseBlock)
-      .getClauses()
-      .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
-      .forEach((clause: CaseClause) => {
-        // store empty clauses for later use and continue
-        if (clause.getStatements().length === 0) {
-          previousIdentifiers.push(clause.getExpression().getText());
-          return;
-        }
-
-        // does the clause have a static return or is the payload used?
-        const hasLogic =
-          clause
-            .getFirstChildByKindOrThrow(SyntaxKind.Block)
-            .getStatements()[0]
-            .getKind() !== SyntaxKind.ReturnStatement;
-
-        // push information about switch statement to array
-        switchStatements.push({
-          identifier: clause.getExpression().getText(),
-          hasLogic,
-          block: clause.getFirstChildByKindOrThrow(SyntaxKind.Block).getText(),
-          previousIdentifiers: [...previousIdentifiers],
-        });
-        previousIdentifiers = [];
-      });
+    this.extractReducerContents();
 
     // create new reducer function
     const reducer = this.reducerFile.addVariableStatement({
@@ -90,7 +65,7 @@ export class ActionCreatorsReducerMorpher {
     createReducerFunction.addArgument('initialState');
 
     // for each switch case, add a new on()-function
-    switchStatements.forEach(clause => {
+    this.switchStatements.forEach(clause => {
       // name of the actionCreator function
       const actionTypes = createActionTypes(clause.identifier, clause.previousIdentifiers);
       const arrowFunction = clause.hasLogic ? `(state, action) => ${clause.block}` : `state => ${clause.block}`;
@@ -113,5 +88,54 @@ export class ActionCreatorsReducerMorpher {
       .getStatements()
       .forEach(statement => statement.remove());
     this.reducerFile.getFunction(`${this.parent.storeName}Reducer`).setBodyText('return reducer(state,action)');
+  }
+
+  /**
+   * extract information from the old reducer switch statement
+   */
+  private extractReducerContents() {
+    // retrieve reducer logic from old reducer
+    this.switchStatements = [];
+    let previousIdentifiers: string[] = [];
+
+    // iterate over reducer switch cases and store info
+    this.reducerFile
+      .getFunction(`${this.parent.storeName}Reducer`)
+      .getFirstDescendantByKind(SyntaxKind.CaseBlock)
+      .getClauses()
+      .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
+      .forEach((clause: CaseClause) => {
+        if (
+          !this.parent.actionsMorph.actionTypes[
+            clause
+              .getExpression()
+              .getText()
+              .split('.')[1]
+          ]
+        ) {
+          this.dependencies.push(clause.getExpression().getText());
+        }
+        // store empty clauses for later use and continue
+        if (clause.getStatements().length === 0) {
+          previousIdentifiers.push(clause.getExpression().getText());
+          return;
+        }
+
+        // does the clause have a static return or is the payload used?
+        const hasLogic =
+          clause
+            .getFirstChildByKindOrThrow(SyntaxKind.Block)
+            .getStatements()[0]
+            .getKind() !== SyntaxKind.ReturnStatement;
+
+        // push information about switch statement to array
+        this.switchStatements.push({
+          identifier: clause.getExpression().getText(),
+          hasLogic,
+          block: clause.getFirstChildByKindOrThrow(SyntaxKind.Block).getText(),
+          previousIdentifiers: [...previousIdentifiers],
+        });
+        previousIdentifiers = [];
+      });
   }
 }

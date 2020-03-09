@@ -32,7 +32,7 @@ export class ActionCreatorsActionsMorpher {
    * read action types from actions enum and save in this.actionTypes
    */
   private readActionTypes() {
-    console.log('reading action types...');
+    console.log('  reading action types...');
     this.actionTypes = this.actionsFile
       .getEnums()[0]
       .getMembers()
@@ -51,7 +51,7 @@ export class ActionCreatorsActionsMorpher {
    * @param updateGlobalReferences whether to globally update references for each action
    */
   private replaceActions(updateGlobalReferences: boolean) {
-    console.log('replacing action classes with creator functions...');
+    console.log('  replacing action classes with creator functions...');
     this.actionsFile.getClasses().forEach(actionClass => {
       // retrieve basic action information
       const className = actionClass.getName();
@@ -113,7 +113,7 @@ export class ActionCreatorsActionsMorpher {
    * @param actionClass the actionClass to update
    */
   private updateGlobalReferences(actionClass: ClassDeclaration) {
-    console.log(`updating references for ${actionClass.getName()}...`);
+    console.log(`  updating references for ${actionClass.getName()}...`);
 
     // iterate over all actionClass references
     let i = 0;
