@@ -1,3 +1,5 @@
+import { SourceFile, SyntaxKind } from 'ts-morph';
+
 /**
  * helper: construct on()-arguments from case identifier and possible preceding empty case identifiers
  * @param identifier switch-case text
@@ -37,4 +39,16 @@ export function isMap(identifier: string) {
  */
 export function updateNewExpressionString(actionClassString: string, argumentString: string = ''): string {
   return `${actionClassString.replace(/^\w/, c => c.toLowerCase())}(${argumentString})`;
+}
+
+/**
+ * helper: searches the given sourceFile for namespace imports and throws an error if one exists
+ * @param sourceFile sourceFile to check
+ */
+export function checkForNamespaceImports(sourceFile: SourceFile) {
+  sourceFile.getImportDeclarations().forEach(im => {
+    if (im.getNamespaceImport()) {
+      throw new Error('please ensure your store files include no star imports');
+    }
+  });
 }

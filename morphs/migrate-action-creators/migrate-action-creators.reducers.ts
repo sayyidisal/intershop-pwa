@@ -1,11 +1,13 @@
 import { CaseClause, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
-import { createActionTypes } from '../morph-helpers/morph-helpers';
+import { checkForNamespaceImports, createActionTypes } from '../morph-helpers/morph-helpers';
 
 export class ActionCreatorsReducerMorpher {
   constructor(public storeName: string, public reducerFile: SourceFile) {}
 
   migrateReducer() {
+    console.log('replacing reducers...');
+    checkForNamespaceImports(this.reducerFile);
     this.addImports();
     this.declareNewReducer();
     this.updateFeatureReducer();
@@ -26,7 +28,6 @@ export class ActionCreatorsReducerMorpher {
    * declare new reducer function created with new createReducer factory
    */
   private declareNewReducer() {
-    console.log('replacing reducers...');
     // retrieve reducer logic from old reducer
     const switchStatements: {
       identifier: string;

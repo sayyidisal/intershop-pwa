@@ -9,11 +9,12 @@ const control = {
   reducer: true,
   effects: true,
 };
-const save = true;
+const save = false;
+const saveIndividual = false;
 
-const storeName = 'contact';
+const storeName = 'regions';
 const project = new Project({
-  tsConfigFilePath: 'E:/Projects/pwa-github/tsconfig.json',
+  tsConfigFilePath: 'D:/Projects/pwa-github/tsconfig.json',
 });
 
 /*
@@ -32,11 +33,14 @@ const effectsMorph = new ActionCreatorsEffectMorpher(storeName, project.getSourc
 
 // migrate actions
 control.actions ? actionMorph.migrateActions() : null;
+saveIndividual ? project.save() : null;
 
 // migrate reducer
 control.reducer ? reducerMorph.migrateReducer() : null;
+saveIndividual ? project.save() : null;
 
 // migrate effects
 control.effects ? effectsMorph.migrateEffects() : null;
+saveIndividual ? project.save() : null;
 
 save ? project.save() : null;

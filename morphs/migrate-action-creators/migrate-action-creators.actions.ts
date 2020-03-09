@@ -8,13 +8,15 @@ import {
   VariableDeclarationKind,
 } from 'ts-morph';
 
-import { updateNewExpressionString } from '../morph-helpers/morph-helpers';
+import { checkForNamespaceImports, updateNewExpressionString } from '../morph-helpers/morph-helpers';
 
 export class ActionCreatorsActionsMorpher {
   constructor(public actionsFile: SourceFile, public storeName: string, public project: Project) {}
   actionTypes: { [typeName: string]: string };
 
   migrateActions(updateGlobalReferences: boolean = true) {
+    console.log('replacing actions...');
+    checkForNamespaceImports(this.actionsFile);
     this.readActionTypes();
     this.replaceActions(updateGlobalReferences);
 
@@ -24,6 +26,7 @@ export class ActionCreatorsActionsMorpher {
     this.actionsFile.fixMissingImports();
     this.actionsFile.fixUnusedIdentifiers();
   }
+
   /**
    * read action types from actions enum and save in this.actionTypes
    */

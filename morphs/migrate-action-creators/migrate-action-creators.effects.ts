@@ -1,12 +1,13 @@
 import { CallExpression, SourceFile, SyntaxKind } from 'ts-morph';
 
-import { isMap } from '../morph-helpers/morph-helpers';
+import { checkForNamespaceImports, isMap } from '../morph-helpers/morph-helpers';
 
 export class ActionCreatorsEffectMorpher {
   constructor(public storeName: string, public effectsFile: SourceFile) {}
 
   migrateEffects() {
     console.log('replacing effects...');
+    checkForNamespaceImports(this.effectsFile);
     this.effectsFile
       .getClasses()[0]
       .getChildrenOfKind(SyntaxKind.PropertyDeclaration)
@@ -44,7 +45,9 @@ export class ActionCreatorsEffectMorpher {
         if (exp) {
           // remove Type Argument and update actionType
           const argument = exp.getArguments()[0];
-          exp.removeTypeArgument(exp.getFirstChildByKind(SyntaxKind.TypeReference));
+          if (exp.getTypeArguments().length > 0) {
+            exp.removeTypeArgument(exp.getFirstChildByKind(SyntaxKind.TypeReference));
+          }
           const t = argument.getLastChildByKind(SyntaxKind.Identifier) || argument;
           exp.addArgument(`${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
           exp.removeArgument(argument);
