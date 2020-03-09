@@ -20,6 +20,7 @@ export class ActionCreatorsEffectMorpher {
       .forEach(effect => {
         // retrieve information from effect
         const name = effect.getFirstChildByKindOrThrow(SyntaxKind.Identifier).getText();
+        const decoratorConfig = effect.getFirstChildByKindOrThrow(SyntaxKind.Decorator).getArguments();
         let logic = effect.getFirstChildByKindOrThrow(SyntaxKind.CallExpression);
 
         // update effect logic
@@ -30,7 +31,10 @@ export class ActionCreatorsEffectMorpher {
         // add new updated property declaration
         this.effectsFile.getClasses()[0].addProperty({
           name,
-          initializer: `createEffect(() => ${logic.getText()})`,
+          initializer:
+            decoratorConfig.length > 0
+              ? `createEffect(() => ${logic.getText()}, ${decoratorConfig[0].getText()})`
+              : `createEffect(() => ${logic.getText()})`,
         });
         effect.remove();
       });
