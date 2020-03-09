@@ -138,7 +138,7 @@ export class ActionCreatorsActionsMorpher {
           ancestor => ancestor.getKind() === SyntaxKind.CallExpression
         ) as CallExpression;
 
-        // update NewExpressions or CallExpressions
+        // NewExpressions or CallExpressions
         if (newExpression) {
           console.log(`    ${newExpression.getSourceFile().getBaseName()}`);
           // swap new class instantiation to actionCreator call
@@ -167,9 +167,17 @@ export class ActionCreatorsActionsMorpher {
             i++;
           } else if (newExpression.getParent().getKind() === SyntaxKind.ArrayLiteralExpression) {
             const array = newExpression.getParentIfKindOrThrow(SyntaxKind.ArrayLiteralExpression);
-            updateNewExpressionString(actionClass.getName(), argument);
             array.addElement(updateNewExpressionString(actionClass.getName(), argument));
             array.removeElement(newExpression);
+            i++;
+          } else if (newExpression.getParent().getKind() === SyntaxKind.ReturnStatement) {
+            const returnStmt = newExpression.getParentIfKindOrThrow(SyntaxKind.ReturnStatement);
+            const parentBlock = returnStmt.getParentIfKindOrThrow(SyntaxKind.Block);
+            const pos = returnStmt.getPos();
+            const newReturn = `return ${updateNewExpressionString(actionClass.getName(), argument)}`;
+            returnStmt.remove();
+            parentBlock.addStatements(newReturn);
+            i++;
           }
         } else if (
           callExpression &&
