@@ -16,6 +16,8 @@
 *.mp4
 *.js.map
 *.properties
+*.crt
+*.key
 .*ignore
 .gitattributes
 .editorconfig
