@@ -1,4 +1,4 @@
-import { SourceFile, SyntaxKind } from 'ts-morph';
+import { SourceFile } from 'ts-morph';
 
 /**
  * helper: construct on()-arguments from case identifier and possible preceding empty case identifiers
@@ -6,7 +6,8 @@ import { SourceFile, SyntaxKind } from 'ts-morph';
  * @param previousIdentifiers array of switch-case texts of previous empty clauses
  */
 export function createActionTypes(identifier: string, previousIdentifiers: string[]): string {
-  if (previousIdentifiers.length >= 9) {
+  if (previousIdentifiers.length > 9) {
+    console.log(previousIdentifiers.join(','));
     throw new Error('Error: too many empty clauses. on() takes at most 10 arguments.');
   }
   const newId = `${standardizeIdentifier(identifier)}`;

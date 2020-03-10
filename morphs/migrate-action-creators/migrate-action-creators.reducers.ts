@@ -130,7 +130,15 @@ export class ActionCreatorsReducerMorpher {
           clause
             .getFirstChildByKindOrThrow(SyntaxKind.Block)
             .getStatements()[0]
-            .getKind() !== SyntaxKind.ReturnStatement;
+            .getKind() !== SyntaxKind.ReturnStatement ||
+          clause
+            .getStatements()[0]
+            .getDescendants()
+            .filter(
+              desc =>
+                desc.getKind() === SyntaxKind.PropertyAccessExpression &&
+                desc.getDescendantsOfKind(SyntaxKind.Identifier).filter(dd => dd.getText() === 'action').length > 0
+            ).length > 0;
 
         // push information about switch statement to array
         this.switchStatements.push({
