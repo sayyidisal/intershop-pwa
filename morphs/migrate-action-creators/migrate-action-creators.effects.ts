@@ -17,6 +17,7 @@ export class ActionCreatorsEffectMorpher {
     this.effectsFile
       .getClasses()[0]
       .getChildrenOfKind(SyntaxKind.PropertyDeclaration)
+      .filter(property => property.getFirstChildByKind(SyntaxKind.Decorator))
       .forEach(effect => {
         // retrieve information from effect
         const name = effect.getFirstChildByKindOrThrow(SyntaxKind.Identifier).getText();
