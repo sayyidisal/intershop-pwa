@@ -110,6 +110,7 @@ export class ActionCreatorsReducerMorpher {
       .filter(clause => clause.getKind() === SyntaxKind.CaseClause)
       .forEach((clause: CaseClause) => {
         if (
+          this.parent.actionsMorph.actionTypes &&
           !this.parent.actionsMorph.actionTypes[
             clause
               .getExpression()
