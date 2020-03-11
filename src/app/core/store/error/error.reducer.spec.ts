@@ -5,7 +5,7 @@ import { anything } from 'ts-mockito';
 import { HttpError } from 'ish-core/models/http-error/http-error.model';
 import { LoginUserSuccess } from 'ish-core/store/user';
 
-import { CommunicationTimeoutError, ErrorActionTypes, HttpErrorAction } from './error.actions';
+import { ErrorActionTypes, HttpErrorAction, TimeoutError } from './error.actions';
 import { errorReducer, initialState } from './error.reducer';
 
 describe('Error Reducer', () => {
@@ -36,7 +36,7 @@ describe('Error Reducer', () => {
       },
       {
         state: initialState,
-        action: new CommunicationTimeoutError({ error: {} as HttpError }),
+        action: new TimeoutError({ error: {} as HttpError }),
         expected: { current: {}, type: ErrorActionTypes.TimeoutError },
       },
       {
