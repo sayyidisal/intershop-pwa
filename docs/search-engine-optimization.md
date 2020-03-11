@@ -1,6 +1,7 @@
 <!--
 kb_sync_by_release
 kb_pwa
+kb_concepts
 kb_everyone
 -->
 # Search Engine Optimization (SEO)

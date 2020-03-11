@@ -1,6 +1,7 @@
 <!--
 kb_sync_latest_only
 kb_pwa
+kb_guide
 kb_everyone
 -->
 # Migrations

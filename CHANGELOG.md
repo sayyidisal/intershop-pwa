@@ -1,9 +1,13 @@
 <!--
 kb_sync_latest_only
 kb_pwa
+kb_releasenote
 kb_everyone
 -->
-# [0.17.0](https://github.com/intershop/intershop-pwa/releases/tag/0.17.0) (2020-01-24)
+
+# Changelog
+
+## [0.17.0](https://github.com/intershop/intershop-pwa/releases/tag/0.17.0) (2020-01-24)
 
 **required Intershop Commerce Management version: 7.10.15.2**
 
@@ -59,7 +63,7 @@ kb_everyone
 - Using containers and components is no longer a recommended pattern. See [Migrations /
   0.16 to 0.17](https://github.com/intershop/intershop-pwa/blob/develop/docs/migrations.md#016-to-017) for more details.
 
-# [0.16.1](https://github.com/intershop/intershop-pwa/releases/tag/0.16.1) (2019-12-13)
+## [0.16.1](https://github.com/intershop/intershop-pwa/releases/tag/0.16.1) (2019-12-13)
 
 > NOTE: To address the issue with trademarked content or content of questionable origin it was neccessary to clean the complete GitHub repository resulting in a rewritten history. Because of that change it is advisable to work with a new clone of the repository.
 
@@ -77,7 +81,7 @@ kb_everyone
 - switch from roboto font files contained in the sources to ones provided via npm packages
 - move all used images to a central img folder for a better overview
 
-# [0.16.0](https://github.com/intershop/intershop-pwa/releases/tag/0.16.0) (2019-11-29)
+## [0.16.0](https://github.com/intershop/intershop-pwa/releases/tag/0.16.0) (2019-11-29)
 
 **required Intershop Commerce Management version: 7.10.15.2**
 
@@ -132,7 +136,7 @@ kb_everyone
 - The feature toggle 'captcha' was renamed to 'captchaV2' in contrast to the newly introduced 'captchaV3' option that could be used with the reCaptcha V3 service activated in ICM and the PWA.
 - To resolve naming conflicts for the upcoming removal of the container-component-pattern some containers and components were merged into simpler components.
 
-# [0.15.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.15.0/) (2019-10-11)
+## [0.15.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.15.0/) (2019-10-11)
 
 **required Intershop Commerce Management version: 7.10.14.0**
 
@@ -172,7 +176,7 @@ kb_everyone
 - Using NgRx artifacts in Angular components is now deprecated, use facades instead.
 - Changed default import references for relative imports within the project and adapted tslint rules to enforce it (old import notation would still work but would lead to tslint errors).
 
-# [0.14.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.14.0/) (2019-09-10)
+## [0.14.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.14.0/) (2019-09-10)
 
 **required Intershop Commerce Management version: 7.10.13.4**
 
@@ -218,7 +222,7 @@ kb_everyone
 - due to file system restrictions, mock-data file names no longer contain parameters
 - CMSModule is now integrated into SharedModule
 
-# 0.13.1 (2019-08-01)
+## 0.13.1 (2019-08-01)
 
 **required Intershop Commerce Management version: 7.10.13.1**
 
@@ -231,7 +235,7 @@ kb_everyone
 - fix responsive design of edit modal for variation products in the cart (ISREST-792)
 - expression changed after it has been checked error for quoting with recently viewed products on product detail page (ISREST-765)
 
-# [0.13.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.13.0/) (2019-07-23)
+## [0.13.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.13.0/) (2019-07-23)
 
 **required Intershop Commerce Management version: 7.10.12.2**
 
@@ -256,7 +260,7 @@ kb_everyone
 - set Bootstrap default body color to our themes color-primary
 - wait till app is stable before starting timers
 
-# [0.12.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.12.0/) (2019-06-13)
+## [0.12.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.12.0/) (2019-06-13)
 
 **required Intershop Commerce Management version: 7.10.9.0**
 
@@ -286,7 +290,7 @@ kb_everyone
 - change out of stock text in line item description (ISREST-675)
 - improved english and german localization texts and added french localization for addresses (ISREST-727)
 
-# [0.11.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.11.0/) (2019-04-24)
+## [0.11.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.11.0/) (2019-04-24)
 
 **required Intershop Commerce Management version: 7.10.7.3**
 
@@ -314,7 +318,7 @@ kb_everyone
 - compare explanation text styling (ISREST-638)
 - do not create select options if quantity selection is displayed as input
 
-# [0.10.5](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.10.5/) (2019-03-12)
+## [0.10.5](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.10.5/) (2019-03-12)
 
 **required Intershop Commerce Management version: 7.10.5.5**
 
@@ -339,7 +343,7 @@ kb_everyone
 
 - renamed Angular CLI environment property 'needMock' to 'mockServerAPI' (now optional)
 
-# [0.9.1](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.9.1/) (2019-02-07)
+## [0.9.1](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.9.1/) (2019-02-07)
 
 ### Features
 
@@ -353,7 +357,7 @@ kb_everyone
 - compare products columns don't have same sizes on mobile (ISREST-558)
 - various quoting issues (ISREST-588)
 
-# [0.9.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.9.0/) (2019-01-31)
+## [0.9.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.9.0/) (2019-01-31)
 
 **required Intershop Commerce Management version: 7.10.5.4**
 
@@ -391,7 +395,7 @@ kb_everyone
 - Properties ICM_APPLICATION (system environment) and icmApplication (environment.ts) are correctly renamed to ICM_CHANNEL and icmChannel respectively.
 - Features now have to be supplied using a string array or as a string containing a comma separated list. Features are now opt-in instead of previously opt-out.
 
-# [0.8.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.8.0/) (2018-12-20)
+## [0.8.0](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.8.0/) (2018-12-20)
 
 **required Intershop Commerce Management version: 7.10.5.2**
 
@@ -428,20 +432,20 @@ kb_everyone
 
 - Folder structure changed due to module refactoring.
 
-# [0.7.10](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.7.10/) (2018-09-10)
+## [0.7.10](https://repository.intershop.de/releases/com/intershop/public/source/intershop-pwa/0.7.10/) (2018-09-10)
 
 First public release of the Intershop Progressive Web App
 
 **required Intershop Commerce Management version: 7.10.2.4**
 
-# 0.6.0 (2018-09-08)
+## 0.6.0 (2018-09-08)
 
 ### Features
 
 - CMS integration - conditional rendering (ISREST-213) - EXPERIMENTAL
 - sticky header - header styling and behavior changes (ISREST-435) - EXPERIMENTAL
 
-# 0.5.0 (2018-09-07)
+## 0.5.0 (2018-09-07)
 
 ### Features
 
@@ -462,7 +466,7 @@ First public release of the Intershop Progressive Web App
 - add changelog generation with conventional-changelog
 - add license information and 3rd-party-licenses overview
 
-# 0.4.0 (2018-08-22)
+## 0.4.0 (2018-08-22)
 
 ### Features
 
@@ -476,7 +480,7 @@ First public release of the Intershop Progressive Web App
 - repair state transfer to work with ngrx state management
 - improve mobile menu handling
 
-# [0.3.0](https://repository.intershop.de//releases/com/intershop/public/source/intershop-pwa/0.3.0/) (2018-08-08)
+## [0.3.0](https://repository.intershop.de//releases/com/intershop/public/source/intershop-pwa/0.3.0/) (2018-08-08)
 
 ### Features
 
@@ -488,7 +492,7 @@ First public release of the Intershop Progressive Web App
 - update Angular to 6.1.0 (+ update of other dependencies)
 - introduce manually managed change log
 
-# [0.2.0](https://repository.intershop.de//releases/com/intershop/public/source/intershop-pwa/0.2.0/) (2018-07-11)
+## [0.2.0](https://repository.intershop.de//releases/com/intershop/public/source/intershop-pwa/0.2.0/) (2018-07-11)
 
 ### Features
 
@@ -498,10 +502,10 @@ First public release of the Intershop Progressive Web App
 
 - improve IE 11 compatibility
 
-# [0.1.1](https://repository.intershop.de//releases/com/intershop/public/source/intershop-pwa/0.1.1/) (2018-06-05)
+## [0.1.1](https://repository.intershop.de//releases/com/intershop/public/source/intershop-pwa/0.1.1/) (2018-06-05)
 
 First public beta release of the Intershop Progressive Web App (intershop-pwa).
 
-# 0.1.0 (2018-05-31)
+## 0.1.0 (2018-05-31)
 
 Initial internal beta release of the Intershop Progressive Web App.
