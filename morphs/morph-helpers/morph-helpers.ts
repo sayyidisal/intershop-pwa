@@ -7,7 +7,6 @@ import { SourceFile } from 'ts-morph';
  */
 export function createActionTypes(identifier: string, previousIdentifiers: string[]): string {
   if (previousIdentifiers.length > 9) {
-    console.log(previousIdentifiers.join(','));
     throw new Error('Error: too many empty clauses. on() takes at most 10 arguments.');
   }
   const newId = `${standardizeIdentifier(identifier)}`;

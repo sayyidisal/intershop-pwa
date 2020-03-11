@@ -54,13 +54,15 @@ export class ActionCreatorsEffectMorpher {
       .forEach(exp => {
         if (exp) {
           // remove Type Argument and update actionType
-          const argument = exp.getArguments()[0];
           if (exp.getTypeArguments().length > 0) {
             exp.removeTypeArgument(exp.getFirstChildByKind(SyntaxKind.TypeReference));
           }
-          const t = argument.getLastChildByKind(SyntaxKind.Identifier) || argument;
-          exp.addArgument(`${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
-          exp.removeArgument(argument);
+          const args = exp.getArguments();
+          args.forEach(argument => {
+            const t = argument.getLastChildByKind(SyntaxKind.Identifier) || argument;
+            exp.addArgument(`${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
+            exp.removeArgument(argument);
+          });
         }
       });
     return pipe;
