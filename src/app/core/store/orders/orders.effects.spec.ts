@@ -4,6 +4,7 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Action, Store, combineReducers } from '@ngrx/store';
+import { TranslateModule } from '@ngx-translate/core';
 import { cold, hot } from 'jest-marbles';
 import { RouteNavigation } from 'ngrx-router';
 import { Observable, noop, of, throwError } from 'rxjs';
@@ -53,6 +54,7 @@ describe('Orders Effects', () => {
             children: [{ path: 'receipt', component: DummyComponent }, { path: 'payment', component: DummyComponent }],
           },
         ]),
+        TranslateModule.forRoot(),
         ngrxTesting({
           reducers: {
             ...coreReducers,
