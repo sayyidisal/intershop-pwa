@@ -59,9 +59,11 @@ export class ActionCreatorsEffectMorpher {
           }
           const args = exp.getArguments();
           args.forEach(argument => {
-            const t = argument.getLastChildByKind(SyntaxKind.Identifier) || argument;
-            exp.addArgument(`${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
-            exp.removeArgument(argument);
+            if (!(argument.getText() === 'ROOT_EFFECTS_INIT')) {
+              const t = argument.getLastChildByKind(SyntaxKind.Identifier) || argument;
+              exp.addArgument(`${t.getText().replace(/^\w/, c => c.toLowerCase())}`);
+              exp.removeArgument(argument);
+            }
           });
         }
       });
